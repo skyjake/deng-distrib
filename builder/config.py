@@ -16,12 +16,16 @@ if 'HOME' in os.environ:
 else:
     EVENT_DIR = '.'
 DISTRIB_DIR = '.'
+DENG_ROOT_DIR = ''
 APT_REPO_DIR = ''
 TAG_MODIFIER = ''
 BRANCH = 'master'
 
 val = get_arg('--distrib')
 if val is not None: DISTRIB_DIR = val
+
+val = get_arg('--dengroot')
+if val is not None: DENG_ROOT_DIR = val
 
 val = get_arg('--events')
 if val is not None: EVENT_DIR = val

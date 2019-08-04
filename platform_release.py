@@ -15,7 +15,7 @@ import builder.utils
 
 # Configuration.
 LAUNCH_DIR    = os.path.abspath(os.path.dirname(__file__))
-DOOMSDAY_DIR  = os.path.abspath(os.path.join(LAUNCH_DIR, '..', 'doomsday'))
+DOOMSDAY_DIR  = os.path.abspath(os.path.join(LAUNCH_DIR, '..', 'deng', 'doomsday'))
 WORK_DIR      = os.path.join(LAUNCH_DIR, 'work')
 OUTPUT_DIR    = os.path.join(LAUNCH_DIR, 'releases')
 DOOMSDAY_VERSION_FULL       = "0.0.0-Name"
@@ -163,7 +163,7 @@ def cmake_release(makeOptions, outputGlobs):
         except:
             postCommand = None
 
-        if os.system('cmake %s ../../doomsday' % currentOptions):
+        if os.system('cmake %s %s' % (currentOptions, DOOMSDAY_DIR)):
             raise Exception("Failed to configure the build.")
         if os.system('cmake --build . --config Release' + (' -- %s' % makeOptions if makeOptions else '')):
             raise Exception("Build failed!")

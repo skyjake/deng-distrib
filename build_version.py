@@ -3,7 +3,7 @@
 import os, sys, re
 import string
 
-DOOMSDAY_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'doomsday')
+DOOMSDAY_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'deng', 'doomsday')
     
 DOOMSDAY_VERSION_FULL = "0.0.0-Name"
 DOOMSDAY_VERSION_FULL_PLAIN = "0.0.0"
