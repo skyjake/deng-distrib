@@ -484,12 +484,12 @@ if __name__ == '__main__':
         print 'The arguments must be: (command) [args]'
         print 'Commands:', string.join(sorted_commands())
         print 'Arguments:'
-        print '--branch   Branch to use (default: master)'
-        print '--dengroot Doomsday source root directory'
-        print '--distrib  "deng-distrib" directory'
-        print '--events   Event directory (builds are stored here in subdirs)'
-        print '--apt      Apt repository'
-        print '--tagmod   Additional suffix for build tag for platform_release'
+        print '--branch    Branch to use (default: master)'
+        print '--distrib   "deng-distrib" directory'
+        print '--doomsday  Doomsday source root directory'
+        print '--events    Event directory (builds are stored here in subdirs)'
+        print '--apt       Apt repository'
+        print '--tagmod    Additional suffix for build tag for platform_release'
         sys.exit(1)
 
     if sys.argv[1] not in commands:
