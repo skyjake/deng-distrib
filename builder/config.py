@@ -16,7 +16,7 @@ if 'HOME' in os.environ:
 else:
     EVENT_DIR = '.'
 DISTRIB_DIR = '.'
-DENG_ROOT_DIR = ''
+DOOMSDAY_DIR = ''
 APT_REPO_DIR = ''
 TAG_MODIFIER = ''
 BRANCH = 'master'
@@ -24,8 +24,8 @@ BRANCH = 'master'
 val = get_arg('--distrib')
 if val is not None: DISTRIB_DIR = val
 
-val = get_arg('--dengroot')
-if val is not None: DENG_ROOT_DIR = val
+val = get_arg('--doomsday')
+if val is not None: DOOMSDAY_DIR = val
 
 val = get_arg('--events')
 if val is not None: EVENT_DIR = val
@@ -38,6 +38,10 @@ if val is not None: BRANCH = val
 
 val = get_arg('--tagmod')
 if val is not None: TAG_MODIFIER = val
+
+# Guess where Doomsday is located.
+if not DOOMSDAY_DIR and DISTRIB_DIR:
+    DOOMSDAY_DIR = os.path.abspath(os.path.join(DISTRIB_DIR, '..', 'deng'))
 
 # Determine APT repository path.
 oldCwd = os.getcwd()
