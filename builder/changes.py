@@ -100,6 +100,7 @@ class Changes:
 
     def parse(self):
         tmpName = '__ctmp'
+        oldDir = os.getcwd()
 
         format = '[[Subject]]%s[[/Subject]]' + \
                  '[[Author]]%an[[/Author]]' + \
@@ -107,8 +108,10 @@ class Changes:
                  '[[Link]]http://github.com/skyjake/Doomsday-Engine/commit/%H[[/Link]]' + \
                  '[[Hash]]%H[[/Hash]]' + \
                  '[[Message]]%b[[/Message]]'
+        os.chdir(config.DOOMSDAY_DIR)
         os.system("git log %s..%s --format=\"%s\" >> %s" % (self.fromTag, self.toTag, format, tmpName))
-
+        os.chdir(oldDir)
+        
         logText = unicode(file(tmpName, 'rt').read(), 'utf-8')
 
         os.remove(tmpName)
@@ -297,6 +300,8 @@ class Changes:
 
             # Append the changes to the debian package changelog.
             os.chdir(os.path.join(config.DOOMSDAY_DIR))
+
+            if not os.path.exists('debian'): os.mkdir('debian')
 
             # First we need to update the version.
             debVersion = build_version.DOOMSDAY_VERSION_FULL + '-' + Event().tag()
