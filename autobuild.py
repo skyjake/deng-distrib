@@ -209,7 +209,7 @@ def build_source_package():
     # Check distribution.
     system_command("lsb_release -a | perl -n -e 'm/Codename:\s(.+)/ && print $1' > /tmp/distroname")
     hostDistro = file('/tmp/distroname', 'rt').read()
-    distros = ['xenial', 'bionic']
+    distros = ['xenial', 'bionic', 'disco']
 
     for distro in distros:
         os.chdir(os.path.join(builder.config.DISTRIB_DIR))
@@ -265,9 +265,11 @@ def build_source_package():
             if dsub: dsub += ';'
             dsub += 's/^doomsday /%s /' % pkgName
 
-        gen_changelog('../../../debian/changelog', 'changelog', dsub)
-        system_command("sed 's/${Arch}/i386 amd64/;s/${Package}/%s/' ../../../debian/control.template > control" % pkgName)
-        system_command("sed 's/`..\/build_number.py --print`/%i/;s/..\/..\/doomsday/..\/doomsday/;s/APPNAME := doomsday/APPNAME := %s/' ../../../debian/rules > rules" % (ev.number(), pkgName))
+        dengDir = builder.config.DOOMSDAY_DIR
+
+        gen_changelog(os.path.join(dengDir, 'debian/changelog'), 'changelog', dsub)
+        system_command("sed 's/${Arch}/i386 amd64/;s/${Package}/%s/' %s/doomsday/build/debian/control > control" % (pkgName, dengDir))
+        system_command("sed 's/${BuildNumber}/%i/;s/..\/..\/doomsday/..\/doomsday/;s/APPNAME := doomsday/APPNAME := %s/' %s/debian/rules > rules" % (ev.number(), pkgName, dengDir))
         os.chdir('..')
         system_command('debuild -S')
         os.chdir('..')
