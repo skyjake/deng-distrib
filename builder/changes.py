@@ -108,14 +108,13 @@ class Changes:
                  '[[Link]]http://github.com/skyjake/Doomsday-Engine/commit/%H[[/Link]]' + \
                  '[[Hash]]%H[[/Hash]]' + \
                  '[[Message]]%b[[/Message]]'
+
         os.chdir(config.DOOMSDAY_DIR)
         os.system("git log %s..%s --format=\"%s\" >> %s" % (self.fromTag, self.toTag, format, tmpName))
+        logText = unicode(file(tmpName, 'rt').read(), 'utf-8')
+        os.remove(tmpName)
         os.chdir(oldDir)
         
-        logText = unicode(file(tmpName, 'rt').read(), 'utf-8')
-
-        os.remove(tmpName)
-
         pos = 0
         self.entries = []
         self.debChangeEntries = []
