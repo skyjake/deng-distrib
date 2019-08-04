@@ -4,7 +4,7 @@
 # Script for performing automated build events.
 # http://dengine.net/dew/index.php?title=Automated_build_system
 #
-# The Build Pilot (pilot.py) is responsible for task distribution 
+# The Build Pilot (pilot.py) is responsible for task distribution
 # and management.
 
 import sys
@@ -17,15 +17,15 @@ import glob
 import builder
 import pickle
 import zipfile
-from builder.git import * 
-from builder.utils import * 
-    
-    
+from builder.git import *
+from builder.utils import *
+
+
 def pull_from_branch():
     """Pulls commits from the repository."""
     git_pull()
-    
-    
+
+
 def create_build_event():
     """Creates and tags a new build for with today's number."""
     print 'Creating a new build event.'
@@ -33,24 +33,24 @@ def create_build_event():
 
     # Identifier/tag for today's build.
     todaysBuild = todays_build_tag()
-    
+
     # Tag the source with the build identifier.
     git_tag(todaysBuild)
-        
+
     # Prepare the build directory.
     ev = builder.Event(todaysBuild)
     ev.clean()
-    
+
     # Save the version number and release type.
     import build_version
     build_version.find_version(quiet=True)
     print >> file(ev.file_path('version.txt'), 'wt'), \
         build_version.DOOMSDAY_VERSION_FULL
     print >> file(ev.file_path('releaseType.txt'), 'wt'), \
-        build_version.DOOMSDAY_RELEASE_TYPE        
+        build_version.DOOMSDAY_RELEASE_TYPE
 
     update_changes()
-    
+
 
 def todays_platform_release():
     """Build today's release for the current platform."""
@@ -60,18 +60,18 @@ def todays_platform_release():
     git_pull()
 
     git_checkout(ev.tag() + builder.config.TAG_MODIFIER)
-    
+
     # We'll copy the new files to the build dir.
     os.chdir(builder.config.DISTRIB_DIR)
     oldFiles = DirState('releases', subdirs=False)
-    
+
     try:
         print 'platform_release.py...'
         run_python2("platform_release.py > %s 2> %s" % \
             ('buildlog.txt', 'builderrors.txt'))
     except Exception, x:
         print 'Error during platform_release:', x
-            
+
     for n in DirState('releases', subdirs=False).list_new_files(oldFiles):
         # Copy any new files.
         remote_copy(os.path.join('releases', n), ev.file_path(n))
@@ -81,10 +81,10 @@ def todays_platform_release():
             arch = 'i386'
             if '_amd64' in n: arch = 'amd64'
             remote_copy(os.path.join('releases', n),
-                        os.path.join(builder.config.APT_REPO_DIR, 
+                        os.path.join(builder.config.APT_REPO_DIR,
                                      builder.config.APT_DIST + \
                                      '/main/binary-%s' % arch, n))
-                                 
+
     # Also the build logs.
     remote_copy('buildlog.txt', ev.file_path('doomsday-out-%s.txt' % sys_id()))
     remote_copy('builderrors.txt', ev.file_path('doomsday-err-%s.txt' % sys_id()))
@@ -92,14 +92,14 @@ def todays_platform_release():
     if 'linux' in sys_id():
         remote_copy('dsfmod/fmod-out-%s.txt' % sys_id(), ev.file_path('fmod-out-%s.txt' % sys_id()))
         remote_copy('dsfmod/fmod-err-%s.txt' % sys_id(), ev.file_path('fmod-err-%s.txt' % sys_id()))
-                                             
+
     git_checkout(builder.config.BRANCH)
 
 
 def sign_packages():
     """Sign all packages in the latest build."""
     ev = builder.Event(latestAvailable=True)
-    print "Signing build %i." % ev.number()    
+    print "Signing build %i." % ev.number()
     for fn in os.listdir(ev.path()):
         if fn.endswith('.msi') or fn.endswith('.exe') or fn.endswith('.dmg') or fn.endswith('.deb'):
             # Make a signature for this.
@@ -111,34 +111,34 @@ def publish_packages():
     ev = builder.Event(latestAvailable=True)
     print "Publishing build %i." % ev.number()
     system_command('deng_copy_build_to_sourceforge.sh "%s"' % ev.path())
-    
+
 
 def find_previous_tag(toTag, version):
     """Finds the build tag preceding `toTag`.
-    
+
     Arguments:
         toTag:   Build tag ("buildNNNN").
-        version: The preceding build tag must be from this version, 
+        version: The preceding build tag must be from this version,
                  comparing only major and minor version components.
-                 Set to None to omit comparisons based on version.                 
+                 Set to None to omit comparisons based on version.
     Returns:
-        Build tag ("buildNNNN"). 
-        None, if there is no applicable previous build. 
+        Build tag ("buildNNNN").
+        None, if there is no applicable previous build.
     """
     builds = builder.events_by_time() # descending by timestamp
-    
+
     print "Finding previous build for %s (version:%s)" % (toTag, version)
-         
+
     # Disregard builds later than `toTag`.
     while len(builds) and builds[0][1].tag() != toTag:
         del builds[0]
-    if len(builds): del builds[0] # == toTag        
+    if len(builds): del builds[0] # == toTag
     if len(builds) == 0:
         return None
-    
+
     for timestamp, ev in builds:
         print ev.tag(), ev.version(), time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(ev.timestamp()))
-        
+
         if version is None:
             # Anything goes.
             return ev.tag()
@@ -146,8 +146,8 @@ def find_previous_tag(toTag, version):
             requiredVer = version_split(version)
             eventVer = version_split(ev.version())
             if requiredVer[:2] == eventVer[:2]:
-                return ev.tag()            
-        
+                return ev.tag()
+
     # Nothing suitable found. Fall back to a more lax search.
     return find_previous_tag(toTag, None)
 
@@ -166,7 +166,7 @@ def update_changes(debChanges=False):
 
     # Let's find the previous event of this version.
     fromTag = find_previous_tag(toTag, refVersion)
-    
+
     if fromTag is None or toTag is None:
         # Range not defined.
         return
@@ -180,25 +180,24 @@ def update_changes(debChanges=False):
         changes.generate('deb')
 
         # Also update the doomsday-fmod changelog (just version number).
-        os.chdir(os.path.join(builder.config.DISTRIB_DIR, 'dsfmod'))
-        
-        fmodVer = build_version.parse_cmake_for_version('../../doomsday/cmake/Version.cmake')
-        debVer = "%s.%s.%s-%s" % (fmodVer[0], fmodVer[1], fmodVer[2], todays_build_tag())
-        print "Marking new FMOD version:", debVer
-        msg = 'New release: Doomsday Engine build %i.' % builder.Event().number()
-        os.system('rm -f debian/changelog && dch --check-dirname-level 0 --create --package doomsday-fmod -v %s "%s"' % (debVer, msg))
-        os.system('dch --release ""')
+        #os.chdir(os.path.join(builder.config.DISTRIB_DIR, 'dsfmod'))
+        #fmodVer = build_version.parse_cmake_for_version('../../doomsday/cmake/Version.cmake')
+        #debVer = "%s.%s.%s-%s" % (fmodVer[0], fmodVer[1], fmodVer[2], todays_build_tag())
+        #print "Marking new FMOD version:", debVer
+        #msg = 'New release: Doomsday Engine build %i.' % builder.Event().number()
+        #os.system('rm -f debian/changelog && dch --check-dirname-level 0 --create --package doomsday-fmod -v %s "%s"' % (debVer, msg))
+        #os.system('dch --release ""')
 
     else:
         changes.generate('html')
         changes.generate('xml')
-           
-           
+
+
 def update_debian_changelog():
     """Updates the Debian changelog at (distrib)/debian/changelog."""
     # Update debian changelog.
     update_changes(debChanges=True)
-           
+
 
 def build_source_package():
     """Builds the source tarball and a Debian source package."""
@@ -206,7 +205,7 @@ def build_source_package():
     git_pull()
     ev = builder.Event(latestAvailable=True)
     print "Creating source tarball for build %i." % ev.number()
-    
+
     # Check distribution.
     system_command("lsb_release -a | perl -n -e 'm/Codename:\s(.+)/ && print $1' > /tmp/distroname")
     hostDistro = file('/tmp/distroname', 'rt').read()
@@ -216,7 +215,7 @@ def build_source_package():
         os.chdir(os.path.join(builder.config.DISTRIB_DIR))
         remkdir('srcwork')
         os.chdir('srcwork')
-    
+
         pkgName = 'doomsday'
         if ev.release_type() == 'stable':
             print 'Stable packages will be prepared'
@@ -253,7 +252,7 @@ def build_source_package():
             if fn[-3:].lower() == '.ex': os.remove(fn)
         os.remove('README.Debian')
         os.remove('README.source')
-    
+
         def gen_changelog(src, dst, extraSub=''):
             system_command("sed 's/%s-build%i/%s/;%s' %s > %s" % (
                     ev.version_base(), ev.number(), pkgVer, extraSub, src, dst))
@@ -279,7 +278,7 @@ def rebuild_apt_repository():
     """Rebuilds the Apt repository by running apt-ftparchive."""
     aptDir = builder.config.APT_REPO_DIR
     print 'Rebuilding the apt repository in %s...' % aptDir
-    
+
     os.system("apt-ftparchive generate ~/Dropbox/APT/ftparchive.conf")
     os.system("apt-ftparchive -c %s release %s/%s > %s/%s/Release" % (builder.config.APT_CONF_FILE, aptDir, builder.config.APT_DIST, aptDir, builder.config.APT_DIST))
     os.chdir("%s/%s" % (aptDir, builder.config.APT_DIST))
@@ -298,15 +297,15 @@ def purge_obsolete():
 
     # We'll keep a small number of events unpurgable.
     totalCount = len(builder.find_old_events(0))
-    
+
     # Purge the old events.
     print 'Deleting build events older than 4 weeks...'
     for ev in builder.find_old_events(threshold):
         if totalCount > 5:
             print ev.tag()
-            shutil.rmtree(ev.path()) 
+            shutil.rmtree(ev.path())
             totalCount -= 1
-        
+
     print 'Purge done.'
 
 
@@ -330,17 +329,17 @@ def generate_apidoc():
     git_pull()
 
     print >> sys.stderr, "\nSDK docs..."
-    os.chdir(os.path.join(builder.config.DISTRIB_DIR, '../doomsday'))    
+    os.chdir(os.path.join(builder.config.DISTRIB_DIR, '../doomsday'))
     system_command('doxygen sdk.doxy >/dev/null 2>doxyissues-sdk.txt')
     system_command('wc -l doxyissues-sdk.txt')
 
     print >> sys.stderr, "\nSDK docs for Qt Creator..."
-    os.chdir(os.path.join(builder.config.DISTRIB_DIR, '../doomsday'))    
+    os.chdir(os.path.join(builder.config.DISTRIB_DIR, '../doomsday'))
     system_command('doxygen sdk-qch.doxy >/dev/null 2>doxyissues-qch.txt')
     system_command('wc -l doxyissues-qch.txt')
 
     print >> sys.stderr, "\nPublic API docs..."
-    os.chdir(os.path.join(builder.config.DISTRIB_DIR, '../doomsday/apps/libdoomsday'))    
+    os.chdir(os.path.join(builder.config.DISTRIB_DIR, '../doomsday/apps/libdoomsday'))
     system_command('doxygen api.doxy >/dev/null 2>../../doxyissues-api.txt')
     system_command('wc -l ../../doxyissues-api.txt')
 
@@ -381,46 +380,46 @@ def generate_wiki():
         dew.submitPage('Latest Doomsday release',
             '#REDIRECT [[Doomsday version %s]]' % ev.version())
     dew.logout()
-    
+
 
 def web_path():
     return os.path.join(builder.config.DISTRIB_DIR, '..', 'web')
-    
-    
+
+
 def web_manifest_filename():
     return os.path.join(builder.config.DISTRIB_DIR, '..', '.web.manifest')
-    
+
 
 def web_save(state):
     pickle.dump(state, file(web_manifest_filename(), 'wb'), pickle.HIGHEST_PROTOCOL)
-    
-    
+
+
 def web_init():
     print 'Initializing web update manifest.'
     web_save(DirState(web_path()))
-    
-    
+
+
 def web_update():
     print 'Checking for web file changes...'
     git_pull()
-    
+
     oldState = pickle.load(file(web_manifest_filename(), 'rb'))
     state = DirState(web_path())
     updated = state.list_new_files(oldState)
     removed = state.list_removed(oldState)
-    
+
     # Save the updated state.
     web_save(state)
-    
+
     # Is there anything to do?
     if not updated and not removed[0] and not removed[1]:
         print 'Everything up-to-date.'
         return
-    
+
     # Compile the update package.
     print 'Updated:', updated
     print 'Removed:', removed
-    arcFn = os.path.join(builder.config.DISTRIB_DIR, '..', 
+    arcFn = os.path.join(builder.config.DISTRIB_DIR, '..',
         'web_update_%s.zip' % time.strftime('%Y%m%d-%H%M%S'))
     arc = zipfile.ZipFile(arcFn, 'w')
     for up in updated:
@@ -428,7 +427,7 @@ def web_update():
     if removed[0] or removed[1]:
         tmpFn = '_removed.tmp'
         tmp = file(tmpFn, 'wt')
-        for n in removed[0]:        
+        for n in removed[0]:
             print >> tmp, 'rm', n
         for d in removed[1]:
             print >> tmp, 'rmdir', d
@@ -436,14 +435,14 @@ def web_update():
         arc.write(tmpFn, 'removed.txt')
         os.remove(tmpFn)
     arc.close()
-    
+
     # Deliver the update to the website.
     print 'Delivering', arcFn
     system_command('scp %s dengine@dengine.net:www/incoming/' % arcFn)
-    
+
     # No need to keep a local copy.
     os.remove(arcFn)
-    
+
 
 def show_help():
     """Prints a description of each command."""
@@ -452,7 +451,7 @@ def show_help():
             print "%-17s " % (cmd + ":") + commands[cmd].__doc__
         else:
             print cmd
-    
+
 
 def sorted_commands():
     sc = commands.keys()

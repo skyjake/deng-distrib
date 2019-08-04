@@ -61,7 +61,7 @@ pilotcfg.py contains information such as (global variables):
 - APT_DIR: apt repository path (for Linux systems)
 - IGNORED_TASKS: list of tasks to quietly ignore (marked as complete)
 
-The function 'postTaskHook(task)' can be defined for actions to be carried out 
+The function 'postTaskHook(task)' can be defined for actions to be carried out
 after a successful execution of a task."""
         sys.exit(1)
 
@@ -69,7 +69,7 @@ APP_NAME = 'Doomsday Build Pilot'
 
 def main():
     checkHome()
-    checkMasterActions()    
+    checkMasterActions()
 
     startNewPilotInstance()
     try:
@@ -101,8 +101,8 @@ def checkHome():
 
 def branchFileName():
     return os.path.join(homeDir(), 'branch')
-    
-    
+
+
 def headsFileName():
     return os.path.join(homeDir(), 'heads')
 
@@ -115,7 +115,7 @@ def currentBranch():
 
 def switchToBranch(branch):
     """Changes the current branch that the Plot operates on.
-    
+
     Returns:
         True, if the branch was changed; otherwise False.
     """
@@ -124,37 +124,37 @@ def switchToBranch(branch):
     print >> f, branch
     f.close()
     return branch != oldBranch
-    
-    
+
+
 def readBranchHeads():
     heads = {}
-    if os.path.exists(headsFileName()): 
+    if os.path.exists(headsFileName()):
         for line in file(headsFileName(), 'rt').readlines():
             name, commit = line.strip().split(':')
             heads[name] = commit
     return heads
-    
-    
+
+
 def markedBranchHead(branch):
     """Checks the ~/.pilot/heads to see which Git commit has been marked
     as the current (old) head. Returns None if there is no marked head."""
     heads = readBranchHeads()
     return heads[branch] if branch in heads else None
-    
-    
+
+
 def markBranchHead(branch, commit):
     heads = readBranchHeads()
     heads[branch] = commit
     f = file(headsFileName(), 'wt')
     for name in heads:
         print >> f, "%s:%s" % (name, heads[name])
-    f.close()    
-    
+    f.close()
+
 
 def checkBranchHeadForChanges():
     """Checks if the current branch has moved since the previous check.
     The current Git head is marked in ~/.pilot/heads.
-    
+
     Returns:
         True, if the branch head has moved.
     """
@@ -172,10 +172,10 @@ def checkBranchHeadForChanges():
 def checkMasterActions():
     """Special master actions."""
     if len(sys.argv) < 2: return
-    
+
     if sys.argv[1] == 'new':
         assert pilotcfg.ID == 'master'
-        
+
         # Create a new task: new sysid[,sysid]* taskname
         target = sys.argv[2]
         taskName = sys.argv[3]
@@ -185,13 +185,13 @@ def checkMasterActions():
             for tgt in target.split(','):
                 newTask(taskName, forClient=tgt)
         sys.exit(0)
-        
+
     if sys.argv[1] == 'finish':
         assert pilotcfg.ID == 'master'
-        
+
         # Check for completed tasks.
         handleCompletedTasks()
-        sys.exit(0)    
+        sys.exit(0)
 
 
 def pidFileName():
@@ -221,13 +221,13 @@ def startNewPilotInstance():
             # Cannot start right now -- will be retried later.
             sys.exit(0)
     print >> file(pid, 'w'), str(os.getpid())
-    
-    
+
+
 def endPilotInstance():
     """Ends this pilot instance."""
     os.remove(os.path.join(homeDir(), pidFileName()))
-    
-    
+
+
 def listTasks(clientId=None, includeCompleted=True, onlyCompleted=False,
               allClients=False):
     tasks = []
@@ -244,26 +244,26 @@ def listTasks(clientId=None, includeCompleted=True, onlyCompleted=False,
                 subfn = os.path.join(fn, subname)
                 if not os.path.isdir(subfn):
                     tasks.append(subname[5:]) # Remove prefix.
-    
+
     if not includeCompleted:
         tasks = filter(lambda n: not n.endswith('.done'), tasks)
-        
+
     if onlyCompleted:
         tasks = filter(lambda n: isTaskComplete(n), tasks)
 
     tasks.sort()
     return tasks
-            
-            
+
+
 def packs(s):
     """The length of the string is prefixed as a 32-bit integer in network
     byte order."""
     return struct.pack('!i', len(s)) + s
 
-        
+
 class ReqHandler(SocketServer.StreamRequestHandler):
     """Handler for requests from clients."""
-    
+
     def handle(self):
         try:
             bytes = struct.unpack('!i', self.rfile.read(4))[0]
@@ -275,10 +275,10 @@ class ReqHandler(SocketServer.StreamRequestHandler):
             msg('Request failed: ' + str(x))
             response = { 'result': 'error', 'error': str(x) }
             self.respond(response)
-            
+
     def respond(self, rsp):
         self.wfile.write(packs(pickle.dumps(rsp, 2)))
-            
+
     def clientId(self):
         if 'id' in self.request:
             return self.request['id']
@@ -292,7 +292,7 @@ class ReqHandler(SocketServer.StreamRequestHandler):
             self.doAction()
         else:
             raise Exception("Unknown request")
-             
+
     def doQuery(self):
         qry = self.request['query']
         if qry == 'get_tasks':
@@ -301,7 +301,7 @@ class ReqHandler(SocketServer.StreamRequestHandler):
                 includeCompleted=False), 'result': 'ok' })
         else:
             raise Exception("Unknown query: " + qry)
-              
+
     def doAction(self):
         act = self.request['action']
         if act == 'complete_task':
@@ -309,8 +309,8 @@ class ReqHandler(SocketServer.StreamRequestHandler):
             self.respond({ 'result': 'ok', 'did_action': act })
         else:
             raise Exception("Unknown action: " + act)
-    
-        
+
+
 def listen():
     print APP_NAME + ' starting in server mode (port %i).' % pilotcfg.PORT
     server = SocketServer.TCPServer(('0.0.0.0', pilotcfg.PORT), ReqHandler)
@@ -336,22 +336,22 @@ def query(q):
             time.sleep(5)
     raise Exception("Query failed to contact host")
 
-    
+
 def checkForTasks():
     for task in query({'id': pilotcfg.ID, 'query': 'get_tasks'})['tasks']:
-        if not doTask(task): 
+        if not doTask(task):
             # Ignore this task... (It will be done later.)
-            continue 
-        
+            continue
+
         # Check for a post-task hook.
         if 'postTaskHook' in dir(pilotcfg):
             pilotcfg.postTaskHook(task)
 
         # No exception was thrown -- the task was successful.
-        query({'action': 'complete_task', 
-               'task': task, 
+        query({'action': 'complete_task',
+               'task': task,
                'id': pilotcfg.ID})
-            
+
 
 def doTask(task):
     """Throws an exception if the task fails."""
@@ -374,7 +374,7 @@ def doTask(task):
         autobuild('pull')
         switchToBranch(branch)
         return autobuild('pull')
-        
+
     elif task.startswith('check_'):
         if pilotcfg.ID == 'master':
             os.chdir(os.path.abspath(os.path.dirname(__file__)))
@@ -418,26 +418,26 @@ def doTask(task):
     elif task == 'apt_refresh':
         msg("APT REPOSITORY REFRESH")
         return autobuild('apt')
-        
+
     elif task == 'update_feed':
         msg("UPDATE FEED")
         autobuild('feed')
         autobuild('xmlfeed')
-        
+
     elif task == 'purge':
         msg("PURGE")
         return autobuild('purge')
-        
+
     elif task == 'generate_apidoc':
         msg("GENERATE API DOCUMENTATION")
         return autobuild('apidoc')
-        
+
     elif task == 'mirror_files':
         msg("MIRROR TO FILES.DENGINE.NET")
         systemCommand('mirror-builds-to-dengine.sh')
-        
+
     return True
-    
+
 
 def handleCompletedTasks():
     """Check the completed tasks and see if we should start new tasks."""
@@ -448,19 +448,19 @@ def handleCompletedTasks():
 
         task = tasks[0][:-5] # Remove '.done'
         assert isTaskComplete(task)
-        
+
         clearTask(task)
-        
+
         print "Task '%s' has been completed (noticed at %s)" % (task, time.asctime())
-        
+
         if task.startswith('buildfrom_'):
             # Commence with a build when everyone is ready.
             newTask('tag_build', forClient='master')
-        
+
         elif task == 'tag_build':
             newTask('build', allClients=True)
             newTask('generate_wiki', forClient='master')
-        
+
         elif task == 'build':
             newTask('source', forClient='master')
 
@@ -471,14 +471,14 @@ def handleCompletedTasks():
             newTask('publish', forClient='master')
             # After the build we can switch to the master again.
             newTask('branch_master', allClients=True)
-            
+
         elif task == 'publish':
             newTask('update_feed', forClient='master')
-            
+
         elif task == 'update_feed':
             newTask('mirror_files', forClient='master')
-    
-    
+
+
 def autobuild(cmd):
     cmdLine = "%s %s" % (os.path.join(pilotcfg.DISTRIB_DIR, 'autobuild.py'), cmd)
     cmdLine += " --distrib %s" % pilotcfg.DISTRIB_DIR
@@ -491,43 +491,43 @@ def autobuild(cmd):
 
     builder.utils.run_python2(cmdLine)
     return True
-        
-    
+
+
 def systemCommand(cmd):
     result = subprocess.call(cmd, shell=True)
     if result != 0:
         raise Exception("Error from " + cmd)
-    
-    
+
+
 def newTask(name, forClient=None, allClients=False):
     if allClients:
         for fn in os.listdir(homeDir()):
             if os.path.isdir(os.path.join(homeDir(), fn)):
                 newTask(name, fn)
         return
-                
+
     path = os.path.join(homeDir(), forClient)
     print "New task '%s' for client '%s'" % (name, forClient)
-    
+
     print >> file(os.path.join(path, 'task_' + name), 'wt'), time.asctime()
-        
-        
+
+
 def completeTask(name, byClient):
     path = os.path.join(homeDir(), byClient, 'task_' + name)
     if not os.path.exists(path):
         raise Exception("Cannot complete missing task '%s' (by client '%s')" % (name, byClient))
 
-    print "Task '%s' completed by '%s' at" % (name, byClient), time.asctime()    
+    print "Task '%s' completed by '%s' at" % (name, byClient), time.asctime()
     os.rename(path, path + '.done')
 
-        
+
 def clearTask(name, direc=None):
     """Delete all task files with this name."""
     if not direc: direc = homeDir()
     for fn in os.listdir(direc):
         p = os.path.join(direc, fn)
         if os.path.isdir(p):
-            clearTask(name, p)            
+            clearTask(name, p)
         if fn.startswith('task_') and (fn[5:] == name or \
             fn[5:] == name + '.done'):
             os.remove(p)
@@ -542,7 +542,7 @@ def isTaskComplete(name):
             # This one is not complete.
             return False
     return True
-               
+
 
 if __name__ == '__main__':
     main()
