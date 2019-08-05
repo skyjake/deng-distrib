@@ -15,7 +15,7 @@ if 'HOME' in os.environ:
     EVENT_DIR = os.path.join(os.environ['HOME'], 'BuildMaster')
 else:
     EVENT_DIR = '.'
-DISTRIB_DIR = '.'
+DISTRIB_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 DOOMSDAY_DIR = ''
 APT_REPO_DIR = ''
 TAG_MODIFIER = ''
