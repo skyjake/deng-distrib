@@ -246,12 +246,12 @@ def build_source_package():
         print "Renaming", fn[:-7], 'to', pkgDir
         os.rename(fn[:-7], pkgDir)
         os.chdir(pkgDir)
-        system_command('echo "" | dh_make --yes -s -c gpl2 --file ../%s' % fn)
+        #system_command('echo "" | dh_make --yes -s -c gpl2 --file ../%s' % fn)
         os.chdir('debian')
         for fn in os.listdir('.'):
             if fn[-3:].lower() == '.ex': os.remove(fn)
-        os.remove('README.Debian')
-        os.remove('README.source')
+        #os.remove('README.Debian')
+        #os.remove('README.source')
 
         def gen_changelog(src, dst, extraSub=''):
             system_command("sed 's/%s-build%i/%s/;%s' %s > %s" % (
@@ -268,8 +268,13 @@ def build_source_package():
         dengDir = builder.config.DOOMSDAY_DIR
 
         gen_changelog(os.path.join(dengDir, 'debian/changelog'), 'changelog', dsub)
-        system_command("sed 's/${Arch}/i386 amd64/;s/${Package}/%s/' %s/doomsday/build/debian/control > control" % (pkgName, dengDir))
-        system_command("sed 's/${BuildNumber}/%i/;s/..\/..\/doomsday/..\/doomsday/;s/APPNAME := doomsday/APPNAME := %s/' %s/debian/rules > rules" % (ev.number(), pkgName, dengDir))
+        control = open(os.path.join(dengDir, 'doomsday/build/debian/control')).read()
+        control = control.replace('${Arch}', 'i386 amd64')
+        control = control.replace('${Package}', pkgName)
+        control = control.replace('${DEBFULLNAME}', os.getenv('DEBFULLNAME'))
+        control = control.replace('${DEBEMAIL}', os.getenv('DEBEMAIL'))
+        open('control', 'w').write(control)
+        system_command("sed 's/${BuildNumber}/%i/;s/..\/..\/doomsday/..\/doomsday/;s/APPNAME := doomsday/APPNAME := %s/' %s/doomsday/build/debian/rules > rules" % (ev.number(), pkgName, dengDir))
         os.chdir('..')
         system_command('debuild -S')
         os.chdir('..')
