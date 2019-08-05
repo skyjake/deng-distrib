@@ -419,10 +419,10 @@ def doTask(task):
         msg("APT REPOSITORY REFRESH")
         return autobuild('apt')
 
-    elif task == 'update_feed':
-        msg("UPDATE FEED")
-        autobuild('feed')
-        autobuild('xmlfeed')
+    #elif task == 'update_feed':
+    #    msg("UPDATE FEED")
+    #    autobuild('feed')
+    #    autobuild('xmlfeed')
 
     elif task == 'purge':
         msg("PURGE")
@@ -473,9 +473,6 @@ def handleCompletedTasks():
             newTask('branch_master', allClients=True)
 
         elif task == 'publish':
-            newTask('update_feed', forClient='master')
-
-        elif task == 'update_feed':
             newTask('mirror_files', forClient='master')
 
 
