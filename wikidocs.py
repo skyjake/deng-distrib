@@ -3,6 +3,7 @@
 
 import sys, os, subprocess
 import build_version
+import builder.config
 
 sys.path += ['/Users/jaakko/Scripts']
 import dew
@@ -75,7 +76,7 @@ def amethyst(input, ame_opts=[]):
 version = '%i.%i' % (build_version.DOOMSDAY_VERSION_MAJOR,
                      build_version.DOOMSDAY_VERSION_MINOR)
 prefix = 'guide:%s' % version
-src_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../doomsday/doc')
+src_root = os.path.join(builder.config.DOOMSDAY_DIR, 'doomsday/doc')
 
 pages = [
     ('%s:readme_windows' % prefix, ['-dWIN32'], 'readme/readme.ame'),
