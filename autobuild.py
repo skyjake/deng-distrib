@@ -89,9 +89,9 @@ def todays_platform_release():
     remote_copy('buildlog.txt', ev.file_path('doomsday-out-%s.txt' % sys_id()))
     remote_copy('builderrors.txt', ev.file_path('doomsday-err-%s.txt' % sys_id()))
 
-    if 'linux' in sys_id():
-        remote_copy('dsfmod/fmod-out-%s.txt' % sys_id(), ev.file_path('fmod-out-%s.txt' % sys_id()))
-        remote_copy('dsfmod/fmod-err-%s.txt' % sys_id(), ev.file_path('fmod-err-%s.txt' % sys_id()))
+    #if 'linux' in sys_id():
+    #    remote_copy('dsfmod/fmod-out-%s.txt' % sys_id(), ev.file_path('fmod-out-%s.txt' % sys_id()))
+    #    remote_copy('dsfmod/fmod-err-%s.txt' % sys_id(), ev.file_path('fmod-err-%s.txt' % sys_id()))
 
     git_checkout(builder.config.BRANCH)
 
