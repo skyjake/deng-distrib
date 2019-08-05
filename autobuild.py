@@ -331,43 +331,19 @@ def generate_apidoc():
     git_pull()
 
     print >> sys.stderr, "\nSDK docs..."
-    os.chdir(os.path.join(builder.config.DISTRIB_DIR, '../doomsday'))
+    os.chdir(os.path.join(builder.config.DOOMSDAY_DIR, 'doomsday'))
     system_command('doxygen sdk.doxy >/dev/null 2>doxyissues-sdk.txt')
     system_command('wc -l doxyissues-sdk.txt')
 
     print >> sys.stderr, "\nSDK docs for Qt Creator..."
-    os.chdir(os.path.join(builder.config.DISTRIB_DIR, '../doomsday'))
+    os.chdir(os.path.join(builder.config.DOOMSDAY_DIR, 'doomsday'))
     system_command('doxygen sdk-qch.doxy >/dev/null 2>doxyissues-qch.txt')
     system_command('wc -l doxyissues-qch.txt')
 
     print >> sys.stderr, "\nPublic API docs..."
-    os.chdir(os.path.join(builder.config.DISTRIB_DIR, '../doomsday/apps/libdoomsday'))
+    os.chdir(os.path.join(builder.config.DOOMSDAY_DIR, 'doomsday/apps/libdoomsday'))
     system_command('doxygen api.doxy >/dev/null 2>../../doxyissues-api.txt')
     system_command('wc -l ../../doxyissues-api.txt')
-
-    # print >> sys.stderr, "\nInternal Win32 docs..."
-    # os.chdir(os.path.join(builder.config.DISTRIB_DIR, '../doomsday/apps/client'))
-    # system_command('doxygen client-win32.doxy >/dev/null 2>../../doxyissues-win32.txt')
-    # system_command('wc -l ../../doxyissues-win32.txt')
-    #
-    # print >> sys.stderr, "\nInternal Mac/Unix docs..."
-    # system_command('doxygen client-mac.doxy >/dev/null 2>../../doxyissues-mac.txt')
-    # system_command('wc -l ../../doxyissues-mac.txt')
-    #
-    # print >> sys.stderr, "\nDoom plugin docs..."
-    # os.chdir(os.path.join(builder.config.DISTRIB_DIR, '../doomsday/apps/plugins/doom'))
-    # system_command('doxygen doom.doxy >/dev/null 2>../../../doxyissues-doom.txt')
-    # system_command('wc -l ../../../doxyissues-doom.txt')
-    #
-    # print >> sys.stderr, "\nHeretic plugin docs..."
-    # os.chdir(os.path.join(builder.config.DISTRIB_DIR, '../doomsday/apps/plugins/heretic'))
-    # system_command('doxygen heretic.doxy >/dev/null 2>../../../doxyissues-heretic.txt')
-    # system_command('wc -l ../../../doxyissues-heretic.txt')
-    #
-    # print >> sys.stderr, "\nHexen plugin docs..."
-    # os.chdir(os.path.join(builder.config.DISTRIB_DIR, '../doomsday/apps/plugins/hexen'))
-    # system_command('doxygen hexen.doxy >/dev/null 2>../../../doxyissues-hexen.txt')
-    # system_command('wc -l ../../../doxyissues-hexen.txt')
 
 
 def generate_wiki():
@@ -382,68 +358,6 @@ def generate_wiki():
         dew.submitPage('Latest Doomsday release',
             '#REDIRECT [[Doomsday version %s]]' % ev.version())
     dew.logout()
-
-
-def web_path():
-    return os.path.join(builder.config.DISTRIB_DIR, '..', 'web')
-
-
-def web_manifest_filename():
-    return os.path.join(builder.config.DISTRIB_DIR, '..', '.web.manifest')
-
-
-def web_save(state):
-    pickle.dump(state, file(web_manifest_filename(), 'wb'), pickle.HIGHEST_PROTOCOL)
-
-
-def web_init():
-    print 'Initializing web update manifest.'
-    web_save(DirState(web_path()))
-
-
-def web_update():
-    print 'Checking for web file changes...'
-    git_pull()
-
-    oldState = pickle.load(file(web_manifest_filename(), 'rb'))
-    state = DirState(web_path())
-    updated = state.list_new_files(oldState)
-    removed = state.list_removed(oldState)
-
-    # Save the updated state.
-    web_save(state)
-
-    # Is there anything to do?
-    if not updated and not removed[0] and not removed[1]:
-        print 'Everything up-to-date.'
-        return
-
-    # Compile the update package.
-    print 'Updated:', updated
-    print 'Removed:', removed
-    arcFn = os.path.join(builder.config.DISTRIB_DIR, '..',
-        'web_update_%s.zip' % time.strftime('%Y%m%d-%H%M%S'))
-    arc = zipfile.ZipFile(arcFn, 'w')
-    for up in updated:
-        arc.write(os.path.join(web_path(), up), 'updated/' + up)
-    if removed[0] or removed[1]:
-        tmpFn = '_removed.tmp'
-        tmp = file(tmpFn, 'wt')
-        for n in removed[0]:
-            print >> tmp, 'rm', n
-        for d in removed[1]:
-            print >> tmp, 'rmdir', d
-        tmp.close()
-        arc.write(tmpFn, 'removed.txt')
-        os.remove(tmpFn)
-    arc.close()
-
-    # Deliver the update to the website.
-    print 'Delivering', arcFn
-    system_command('scp %s dengine@dengine.net:www/incoming/' % arcFn)
-
-    # No need to keep a local copy.
-    os.remove(arcFn)
 
 
 def show_help():
@@ -475,8 +389,6 @@ commands = {
     'cleanup': dir_cleanup,
     'apidoc': generate_apidoc,
     'wiki': generate_wiki,
-    'web_init': web_init,
-    'web_update': web_update,
     'help': show_help
 }
 
