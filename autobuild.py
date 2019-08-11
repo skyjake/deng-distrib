@@ -279,7 +279,7 @@ def build_source_package():
                 for guiDep in ['libsdl2-mixer-dev', 'libxrandr-dev', 'libxxf86vm-dev',
                                'libqt5opengl5-dev', 'libqt5x11extras5-dev',
                                'libfluidsynth-dev']:
-                    control = control.replace(guiDep + ', ', ''))
+                    control = control.replace(guiDep + ', ', '')
                 control = control.replace('port with enhanced graphics',
                                           'port with enhanced graphics (server only)')
             open('control', 'w').write(control)
