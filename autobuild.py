@@ -238,15 +238,18 @@ def build_source_package():
             system_command('tar xzf %s' % fn)
             print "Renaming", fn[:-7], 'to', pkgDir + '.orig'
             os.rename(fn[:-7], pkgDir + '.orig')
+            print "Renamed."
 
             origName = pkgName + '_%s' % ev.version_base() + '.orig.tar.gz'
             print "Symlink to", origName
-            system_command('ln %s %s' % (fn, origName))
+            system_command('ln -s %s %s' % (fn, origName))
 
             print "Extracting", fn
             system_command('tar xzf %s' % fn)
             print "Renaming", fn[:-7], 'to', pkgDir
             os.rename(fn[:-7], pkgDir)
+            print "Renamed."
+            
             os.chdir(pkgDir)
             #system_command('echo "" | dh_make --yes -s -c gpl2 --file ../%s' % fn)
             os.chdir('debian')
@@ -275,19 +278,21 @@ def build_source_package():
             control = control.replace('${Package}', pkgName)
             control = control.replace('${DEBFULLNAME}', os.getenv('DEBFULLNAME'))
             control = control.replace('${DEBEMAIL}', os.getenv('DEBEMAIL'))
+            extraCMakeOptions = ""
             if isServerOnly:
-                for guiDep in ['libsdl2-mixer-dev', 'libxrandr-dev', 'libxxf86vm-dev',
+                for guiDep in ['libsdl2-dev', 'libsdl2-mixer-dev',
+                               'libxrandr-dev', 'libxxf86vm-dev',
                                'libqt5opengl5-dev', 'libqt5x11extras5-dev',
                                'libfluidsynth-dev']:
                     control = control.replace(guiDep + ', ', '')
                 control = control.replace('port with enhanced graphics',
                                           'port with enhanced graphics (server only)')
+                extraCMakeOptions = 's/COTIRE=OFF/COTIRE=OFF -DDENG_ENABLE_GUI=OFF/'
             open('control', 'w').write(control)
             system_command("sed 's/${BuildNumber}/%i/;s/..\/..\/doomsday/..\/doomsday/;"
-                        "s/APPNAME := doomsday/APPNAME := %s/';"
-                        "s/COTIRE=OFF/COTIRE=OFF -DDENG_ENABLE_GUI=OFF/ "
+                        "s/APPNAME := doomsday/APPNAME := %s/;%s' "
                         "%s/doomsday/build/debian/rules > rules" %
-                        (ev.number(), pkgName, dengDir))
+                        (ev.number(), pkgName, extraCMakeOptions, dengDir))
             os.chdir('..')
             system_command('debuild -S')
             os.chdir('..')
