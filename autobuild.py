@@ -284,7 +284,7 @@ def build_source_package():
                                           'port with enhanced graphics (server only)')
             open('control', 'w').write(control)
             system_command("sed 's/${BuildNumber}/%i/;s/..\/..\/doomsday/..\/doomsday/;"
-                        "s/APPNAME := doomsday/APPNAME := %s/' "
+                        "s/APPNAME := doomsday/APPNAME := %s/';"
                         "s/COTIRE=OFF/COTIRE=OFF -DDENG_ENABLE_GUI=OFF/ "
                         "%s/doomsday/build/debian/rules > rules" %
                         (ev.number(), pkgName, dengDir))
