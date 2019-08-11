@@ -212,73 +212,86 @@ def build_source_package():
     distros = ['xenial', 'bionic', 'disco']
 
     for distro in distros:
-        os.chdir(os.path.join(builder.config.DISTRIB_DIR))
-        remkdir('srcwork')
-        os.chdir('srcwork')
+        for pkgName in ['doomsday', 'doomsday-server']:
+            isServerOnly = pkgName.endswith('-server')
 
-        pkgName = 'doomsday'
-        if ev.release_type() == 'stable':
-            print 'Stable packages will be prepared'
-            system_command('deng_package_source.sh stable %i %s' % (ev.number(), ev.version_base()))
-            pkgName += '-stable'
-        else:
-            system_command('deng_package_source.sh unstable %i %s' % (ev.number(), ev.version_base()))
-        for fn in os.listdir('.'):
-            if fn[:9] == 'doomsday-' and fn[-7:] == '.tar.gz' and ev.version_base() in fn:
-                remote_copy(fn, ev.file_path(fn))
-                break
+            os.chdir(os.path.join(builder.config.DISTRIB_DIR))
+            remkdir('srcwork')
+            os.chdir('srcwork')
 
-        # Create a source Debian package and upload it to Launchpad.
-        pkgVer = '%s.%i+%s' % (ev.version_base(), ev.number(), distro)
-        pkgDir = pkgName + '-%s' % pkgVer
+            if ev.release_type() == 'stable':
+                print 'Stable packages will be prepared'
+                system_command('deng_package_source.sh stable %i %s' % (ev.number(), ev.version_base()))
+                pkgName += '-stable'
+            else:
+                system_command('deng_package_source.sh unstable %i %s' % (ev.number(), ev.version_base()))
+            for fn in os.listdir('.'):
+                if fn[:9] == 'doomsday-' and fn[-7:] == '.tar.gz' and ev.version_base() in fn:
+                    remote_copy(fn, ev.file_path(fn))
+                    break
 
-        print "Extracting", fn
-        system_command('tar xzf %s' % fn)
-        print "Renaming", fn[:-7], 'to', pkgDir + '.orig'
-        os.rename(fn[:-7], pkgDir + '.orig')
+            # Create a source Debian package and upload it to Launchpad.
+            pkgVer = '%s.%i+%s' % (ev.version_base(), ev.number(), distro)
+            pkgDir = pkgName + '-%s' % pkgVer
 
-        origName = pkgName + '_%s' % ev.version_base() + '.orig.tar.gz'
-        print "Symlink to", origName
-        system_command('ln %s %s' % (fn, origName))
+            print "Extracting", fn
+            system_command('tar xzf %s' % fn)
+            print "Renaming", fn[:-7], 'to', pkgDir + '.orig'
+            os.rename(fn[:-7], pkgDir + '.orig')
 
-        print "Extracting", fn
-        system_command('tar xzf %s' % fn)
-        print "Renaming", fn[:-7], 'to', pkgDir
-        os.rename(fn[:-7], pkgDir)
-        os.chdir(pkgDir)
-        #system_command('echo "" | dh_make --yes -s -c gpl2 --file ../%s' % fn)
-        os.chdir('debian')
-        for fn in os.listdir('.'):
-            if fn[-3:].lower() == '.ex': os.remove(fn)
-        #os.remove('README.Debian')
-        #os.remove('README.source')
+            origName = pkgName + '_%s' % ev.version_base() + '.orig.tar.gz'
+            print "Symlink to", origName
+            system_command('ln %s %s' % (fn, origName))
 
-        def gen_changelog(src, dst, extraSub=''):
-            system_command("sed 's/%s-build%i/%s/;%s' %s > %s" % (
-                    ev.version_base(), ev.number(), pkgVer, extraSub, src, dst))
+            print "Extracting", fn
+            system_command('tar xzf %s' % fn)
+            print "Renaming", fn[:-7], 'to', pkgDir
+            os.rename(fn[:-7], pkgDir)
+            os.chdir(pkgDir)
+            #system_command('echo "" | dh_make --yes -s -c gpl2 --file ../%s' % fn)
+            os.chdir('debian')
+            for fn in os.listdir('.'):
+                if fn[-3:].lower() == '.ex': os.remove(fn)
+            #os.remove('README.Debian')
+            #os.remove('README.source')
 
-        # Figure out the name of the distribution.
-        dsub = ''
-        if distro != hostDistro:
-            dsub = 's/) %s;/) %s;/' % (hostDistro, distro)
-        if pkgName != 'doomsday':
-            if dsub: dsub += ';'
-            dsub += 's/^doomsday /%s /' % pkgName
+            def gen_changelog(src, dst, extraSub=''):
+                system_command("sed 's/%s-build%i/%s/;%s' %s > %s" % (
+                        ev.version_base(), ev.number(), pkgVer, extraSub, src, dst))
 
-        dengDir = builder.config.DOOMSDAY_DIR
+            # Figure out the name of the distribution.
+            dsub = ''
+            if distro != hostDistro:
+                dsub = 's/) %s;/) %s;/' % (hostDistro, distro)
+            if pkgName != 'doomsday':
+                if dsub: dsub += ';'
+                dsub += 's/^doomsday /%s /' % pkgName
 
-        gen_changelog(os.path.join(dengDir, 'debian/changelog'), 'changelog', dsub)
-        control = open(os.path.join(dengDir, 'doomsday/build/debian/control')).read()
-        control = control.replace('${Arch}', 'i386 amd64')
-        control = control.replace('${Package}', pkgName)
-        control = control.replace('${DEBFULLNAME}', os.getenv('DEBFULLNAME'))
-        control = control.replace('${DEBEMAIL}', os.getenv('DEBEMAIL'))
-        open('control', 'w').write(control)
-        system_command("sed 's/${BuildNumber}/%i/;s/..\/..\/doomsday/..\/doomsday/;s/APPNAME := doomsday/APPNAME := %s/' %s/doomsday/build/debian/rules > rules" % (ev.number(), pkgName, dengDir))
-        os.chdir('..')
-        system_command('debuild -S')
-        os.chdir('..')
-        system_command('dput ppa:sjke/doomsday %s_%s_source.changes' % (pkgName, pkgVer))
+            dengDir = builder.config.DOOMSDAY_DIR
+
+            gen_changelog(os.path.join(dengDir, 'debian/changelog'), 'changelog', dsub)
+            control = open(os.path.join(dengDir, 'doomsday/build/debian/control')).read()
+            control = control.replace('${Arch}', 'i386 amd64')
+            control = control.replace('${Package}', pkgName)
+            control = control.replace('${DEBFULLNAME}', os.getenv('DEBFULLNAME'))
+            control = control.replace('${DEBEMAIL}', os.getenv('DEBEMAIL'))
+            if isServerOnly:
+                for guiDep in ['libsdl2-mixer-dev', 'libxrandr-dev', 'libxxf86vm-dev',
+                               'libqt5opengl5-dev', 'libqt5x11extras5-dev',
+                               'libfluidsynth-dev']:
+                    control = control.replace(guiDep + ', ', ''))
+                control = control.replace('port with enhanced graphics',
+                                          'port with enhanced graphics (server only)')
+            open('control', 'w').write(control)
+            system_command("sed 's/${BuildNumber}/%i/;s/..\/..\/doomsday/..\/doomsday/;"
+                        "s/APPNAME := doomsday/APPNAME := %s/' "
+                        "s/COTIRE=OFF/COTIRE=OFF -DDENG_ENABLE_GUI=OFF/ "
+                        "%s/doomsday/build/debian/rules > rules" %
+                        (ev.number(), pkgName, dengDir))
+            os.chdir('..')
+            system_command('debuild -S')
+            os.chdir('..')
+            system_command('dput ppa:sjke/doomsday %s_%s_source.changes' % (pkgName, pkgVer))
 
 
 def rebuild_apt_repository():
