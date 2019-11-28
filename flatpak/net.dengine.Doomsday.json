@@ -35,8 +35,8 @@
             "sources": [
                 {
                     "type": "git",
-                    "url": "ssh://git@skyjake.fi/doomsday/engine.git",
-                    "branch": "master"
+                    "url": "https://github.com/skyjake/Doomsday-Engine",
+                    "tag": "v2.1.2"
                 }
             ]
         }
