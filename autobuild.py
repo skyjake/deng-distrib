@@ -209,7 +209,10 @@ def build_source_package():
     # Check distribution.
     system_command("lsb_release -a | perl -n -e 'm/Codename:\s(.+)/ && print $1' > /tmp/distroname")
     hostDistro = file('/tmp/distroname', 'rt').read()
-    distros = ['xenial', 'bionic', 'disco']
+    # xenial: 16.04 LTS
+    # bionic: 18.04 LTS
+    # eoan: latest
+    distros = ['xenial', 'bionic', 'eoan']
 
     for distro in distros:
         for pkgName in ['doomsday', 'doomsday-server']:
@@ -249,7 +252,7 @@ def build_source_package():
             print "Renaming", fn[:-7], 'to', pkgDir
             os.rename(fn[:-7], pkgDir)
             print "Renamed."
-            
+
             os.chdir(pkgDir)
             #system_command('echo "" | dh_make --yes -s -c gpl2 --file ../%s' % fn)
             os.chdir('debian')
