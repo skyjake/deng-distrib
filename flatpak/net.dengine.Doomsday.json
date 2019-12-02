@@ -4,6 +4,7 @@
     "runtime-version": "5.12",
     "sdk": "org.kde.Sdk",
     "command": "doomsday",
+    "default-branch": "2.3",
     "modules": [
         {
             "name": "fluidsynth",
@@ -30,13 +31,14 @@
             "builddir": true,
             "config-opts": [
                 "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
-                "-DDE_PREFIX=/app"
+                "-DDE_PREFIX=/app",
+                "-DDENG_ENABLE_SDK=NO"
             ],
             "sources": [
                 {
                     "type": "git",
                     "url": "https://github.com/skyjake/Doomsday-Engine",
-                    "tag": "v2.1.2"
+                    "branch": "master"
                 }
             ]
         }
