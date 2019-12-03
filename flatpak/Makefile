@@ -4,8 +4,6 @@ MANIFEST=net.dengine.Doomsday.json
 KEY_ID=15674AE498667047A3EB9431BACCFCFB98DB2EDC
 BUNDLE_FILE=doomsday.flatpak
 
-.PHONY: repo sync
-
 all: build repo sync
 
 build: ${MANIFEST}
@@ -23,8 +21,11 @@ bundle:
 repo:
 	flatpak build-update-repo ${REPO_DIR} \
 		--gpg-sign=${KEY_ID} \
-		--generate-static-deltas
+		--generate-static-deltas \
+		--prune-depth=5
 
 sync:
 	rsync -acuz --rsh="dengpass ssh" ${REPO_DIR}/ skyjake@dengine.net:files/repo/
+
+.PHONY: all bundle repo sync
 
