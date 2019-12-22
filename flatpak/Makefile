@@ -4,7 +4,7 @@ MANIFEST=net.dengine.Doomsday.json
 KEY_ID=15674AE498667047A3EB9431BACCFCFB98DB2EDC
 BUNDLE_FILE=doomsday.flatpak
 
-all: build repo sync
+all: build repo
 
 build: ${MANIFEST}
 	flatpak-builder \

@@ -1,10 +1,19 @@
 {
     "app-id": "net.dengine.Doomsday",
     "runtime": "org.kde.Platform",
-    "runtime-version": "5.12",
+    "runtime-version": "5.13",
     "sdk": "org.kde.Sdk",
     "command": "doomsday",
     "default-branch": "2.3",
+    "finish-args": [
+        "--socket=x11",
+        "--socket=pulseaudio",
+        "--share=network",
+        "--device=dri",
+        "--filesystem=home",
+        "--filesystem=/usr/share/games:ro",
+        "--filesystem=/etc/timidity:ro"
+    ],
     "modules": [
         {
             "name": "fluidsynth",
@@ -27,7 +36,7 @@
         },
         {
             "name": "doomsday",
-            "buildsystem": "cmake",
+            "buildsystem": "cmake-ninja",
             "builddir": true,
             "config-opts": [
                 "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
@@ -42,14 +51,5 @@
                 }
             ]
         }
-    ],
-    "finish-args": [
-        "--socket=x11",
-        "--socket=pulseaudio",
-        "--share=network",
-        "--device=dri",
-        "--filesystem=home",
-        "--filesystem=/usr/share/games:ro",
-        "--filesystem=/etc/timidity:ro"
     ]
 }
