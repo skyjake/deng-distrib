@@ -22,10 +22,10 @@ repo:
 	flatpak build-update-repo ${REPO_DIR} \
 		--gpg-sign=${KEY_ID} \
 		--generate-static-deltas \
-		--prune-depth=5
+		--prune-depth=3
 
 sync:
-	rsync -acuz --rsh="dengpass ssh" ${REPO_DIR}/ skyjake@dengine.net:files/repo/
+	rsync -a --progress --delete-after --rsh="dengpass ssh" ${REPO_DIR}/ skyjake@dengine.net:files/repo/
 
 .PHONY: all bundle repo sync
 
