@@ -148,7 +148,7 @@ def cmake_options():
         print(("No additional options provided for CMake (%s missing)" % cmake_options_path()))
         opts = ''
     common = ' -DCMAKE_BUILD_TYPE=Release -DDENG_BUILD=%s ' % (DOOMSDAY_BUILD_NUMBER)
-    return [o + common for o in map(string.strip, opts.split('-----'))]
+    return [o + common for o in map(str.strip, opts.split('-----'))]
 
 
 def cmake_release(makeOptions, outputGlobs):
