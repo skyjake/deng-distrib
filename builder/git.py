@@ -11,7 +11,7 @@ def run_git(cmdLine, ignoreResult=False):
 
 def git_checkout(ident):
     """Checkout the branch or tag @a ident from the repository."""
-    print 'Checking out %s...' % ident
+    print('Checking out %s...' % ident)
     os.chdir(builder.config.DOOMSDAY_DIR)
     run_git("git checkout %s" % ident)
     os.chdir(builder.config.DISTRIB_DIR)
@@ -19,7 +19,7 @@ def git_checkout(ident):
 
 def git_pull():
     """Updates the source with a git pull and submodule update."""
-    print 'Updating source from branch %s...' % builder.config.BRANCH
+    print('Updating source from branch %s...' % builder.config.BRANCH)
     os.chdir(builder.config.DISTRIB_DIR)
     run_git("git pull") # update deng-distrib itself
     os.chdir(builder.config.DOOMSDAY_DIR)
@@ -31,7 +31,7 @@ def git_pull():
     
 def git_tag(tag):
     """Tags the source with a new tag."""
-    print 'Tagging with %s...' % tag
+    print('Tagging with %s...' % tag)
     os.chdir(builder.config.DOOMSDAY_DIR)
     run_git("git tag %s" % tag, ignoreResult=True)
     run_git("git push --tags")

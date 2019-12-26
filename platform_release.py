@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # This script builds the distribution packages platform-independently.
 # No parameters needed; config is auto-detected.
 
@@ -40,7 +40,7 @@ def mkdir(n):
     try:
         os.mkdir(n)
     except OSError:
-        print 'Directory', n, 'already exists.'
+        print('Directory', n, 'already exists.')
 
 
 def remkdir(n):
@@ -60,15 +60,15 @@ def remove(n):
     try:
         os.remove(n)
     except OSError:
-        print 'Cannot remove', n
+        print('Cannot remove', n)
 
 
 def copytree(s, d):
     try:
         shutil.copytree(s, d)
-    except Exception, x:
-        print x
-        print 'Cannot copy', s, 'to', d
+    except Exception as x:
+        print(x)
+        print('Cannot copy', s, 'to', d)
 
 
 def duptree(s, d):
@@ -92,13 +92,13 @@ def find_version():
     DOOMSDAY_VERSION_MINOR = build_version.DOOMSDAY_VERSION_MINOR
     DOOMSDAY_VERSION_REVISION = build_version.DOOMSDAY_VERSION_REVISION
 
-    print 'Build:', DOOMSDAY_BUILD, 'on', TIMESTAMP
-    print 'Version:', DOOMSDAY_VERSION_FULL_PLAIN, DOOMSDAY_RELEASE_TYPE
+    print('Build:', DOOMSDAY_BUILD, 'on', TIMESTAMP)
+    print('Version:', DOOMSDAY_VERSION_FULL_PLAIN, DOOMSDAY_RELEASE_TYPE)
 
 
 def prepare_work_dir():
     remkdir(WORK_DIR)
-    print "Work directory prepared."
+    print("Work directory prepared.")
 
 
 def mac_os_version():
@@ -145,7 +145,7 @@ def cmake_options():
     try:
         opts = open(os.path.join(LAUNCH_DIR, cmake_options_path()), 'rt').read().replace('\n', ' ')
     except:
-        print("No additional options provided for CMake (%s missing)" % cmake_options_path())
+        print(("No additional options provided for CMake (%s missing)" % cmake_options_path()))
         opts = ''
     common = ' -DCMAKE_BUILD_TYPE=Release -DDENG_BUILD=%s ' % (DOOMSDAY_BUILD_NUMBER)
     return [o + common for o in map(string.strip, opts.split('-----'))]
@@ -229,29 +229,29 @@ def main():
     prepare_work_dir()
     find_version()
 
-    print "Checking OS...",
+    print("Checking OS...", end=' ')
 
     try:
         if sys.platform == "darwin":
-            print "Mac OS X (%s)" % mac_os_version()
+            print("Mac OS X (%s)" % mac_os_version())
             mac_release()
         elif sys.platform == "win32":
-            print "Windows"
+            print("Windows")
             win_release()
         elif sys.platform == "linux2":
-            print "Linux"
+            print("Linux")
             linux_release()
         else:
-            print "Unknown!"
-            print "I don't know how to make a release on this platform."
+            print("Unknown!")
+            print("I don't know how to make a release on this platform.")
             exit_with_error()
-    except Exception, x:
-        print "Creating the release failed!"
-        print x
+    except Exception as x:
+        print("Creating the release failed!")
+        print(x)
         exit_with_error()
 
     os.chdir(LAUNCH_DIR)
-    print "Done."
+    print("Done.")
 
 
 if __name__ == '__main__':

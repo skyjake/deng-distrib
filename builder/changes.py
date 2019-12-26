@@ -1,31 +1,31 @@
 # coding=utf-8
 import os
 import string
-import utils
-from event import Event
-import config
+from . import utils
+from .event import Event
+from . import config
 
 def encodedText(logText):
     logText = logText.replace('&', '&amp;')
-    logText = logText.replace(u'ä', u'&auml;')
-    logText = logText.replace(u'ö', u'&ouml;')
-    logText = logText.replace(u'Ä', u'&Auml;')
-    logText = logText.replace(u'Ö', u'&Ouml;')
+    logText = logText.replace('ä', '&auml;')
+    logText = logText.replace('ö', '&ouml;')
+    logText = logText.replace('Ä', '&Auml;')
+    logText = logText.replace('Ö', '&Ouml;')
     logText = logText.encode('utf-8')
     logText = logText.replace('<', '&lt;')
     logText = logText.replace('>', '&gt;')
-    logText = filter(lambda c: c in string.whitespace or c > ' ', logText)
+    logText = [c for c in logText if c in string.whitespace or c > ' ']
     return logText
 
 
 def xmlEncodedText(logText):
-    result = u''
+    result = ''
     for c in logText:
-        if c == u'<':
-            result += u'<![CDATA[<]]>'
+        if c == '<':
+            result += '<![CDATA[<]]>'
         elif c == '>':
-            result += u'<![CDATA[>]]>'
-        elif c in unicode(string.whitespace) or c > u' ':
+            result += '<![CDATA[>]]>'
+        elif c in str(string.whitespace) or c > ' ':
             result += c
     return result
 
@@ -111,7 +111,7 @@ class Changes:
 
         os.chdir(config.DOOMSDAY_DIR)
         os.system("git log %s..%s --format=\"%s\" >> %s" % (self.fromTag, self.toTag, format, tmpName))
-        logText = unicode(file(tmpName, 'rt').read(), 'utf-8')
+        logText = str(file(tmpName, 'rt').read(), 'utf-8')
         os.remove(tmpName)
         os.chdir(oldDir)
         
@@ -179,7 +179,7 @@ class Changes:
         return False
 
     def remove_reverts(self):
-        self.entries = filter(lambda e: not self.is_reverted(e), self.entries)
+        self.entries = [e for e in self.entries if not self.is_reverted(e)]
 
     def deduce_tags(self):
         # Look for known tags in untagged titles.
@@ -235,20 +235,20 @@ class Changes:
             entries = self.entries[:MAX_COMMITS]
 
             if len(self.entries) > MAX_COMMITS:
-                print >> out, '<p>Showing %i of %i commits.' % (MAX_COMMITS, len(self.entries))
-                print >> out, 'The <a href="%s">oldest commit</a> is dated %s.</p>' % \
-                    (self.entries[-1].link, self.entries[-1].date)
+                print('<p>Showing %i of %i commits.' % (MAX_COMMITS, len(self.entries)), file=out)
+                print('The <a href="%s">oldest commit</a> is dated %s.</p>' % \
+                    (self.entries[-1].link, self.entries[-1].date), file=out)
 
             # Form groups.
             groups = self.form_groups(entries)
-            keys = groups.keys()
+            keys = list(groups.keys())
             # Sort case-insensitively by group name.
             keys.sort(cmp=lambda a, b: cmp(str(a).lower(), str(b).lower()))
             for group in keys:
                 if not len(groups[group]): continue
 
-                print >> out, '<h3>%s</h3>' % group
-                print >> out, '<ul>'
+                print('<h3>%s</h3>' % group, file=out)
+                print('<ul>', file=out)
 
                 # Write a list entry for each commit.
                 for entry in groups[group]:
@@ -260,37 +260,37 @@ class Changes:
                     others = self.pretty_group_list(otherGroups)
                     if others: others = ' (&rarr; %s)' % others
 
-                    print >> out, '<li>'
-                    print >> out, '<a href="%s">%s</a>: ' % (entry.link, entry.date[:10])
-                    print >> out, '<b>%s</b>' % entry.subject
-                    print >> out, 'by <i>%s</i>%s' % (encodedText(entry.author), others)
-                    print >> out, '<blockquote style="color:#666;">%s</blockquote>' % entry.message(encodeHtml=True)
+                    print('<li>', file=out)
+                    print('<a href="%s">%s</a>: ' % (entry.link, entry.date[:10]), file=out)
+                    print('<b>%s</b>' % entry.subject, file=out)
+                    print('by <i>%s</i>%s' % (encodedText(entry.author), others), file=out)
+                    print('<blockquote style="color:#666;">%s</blockquote>' % entry.message(encodeHtml=True), file=out)
 
-                print >> out, '</ul>'
+                print('</ul>', file=out)
             out.close()
 
         elif format == 'xml':
             out = file(Event(toTag).file_path('changes.xml'), 'wt')
-            print >> out, '<commitCount>%i</commitCount>' % len(self.entries)
-            print >> out, '<commits>'
+            print('<commitCount>%i</commitCount>' % len(self.entries), file=out)
+            print('<commits>', file=out)
             for entry in self.entries:
-                print >> out, '<commit>'
-                print >> out, '<submitDate>%s</submitDate>' % entry.date
-                out.write((u'<author>%s</author>\n' % xmlEncodedText(entry.author)).encode('utf-8'))
-                print >> out, '<repositoryUrl>%s</repositoryUrl>' % entry.link
-                print >> out, '<sha1>%s</sha1>' % entry.hash
+                print('<commit>', file=out)
+                print('<submitDate>%s</submitDate>' % entry.date, file=out)
+                out.write(('<author>%s</author>\n' % xmlEncodedText(entry.author)).encode('utf-8'))
+                print('<repositoryUrl>%s</repositoryUrl>' % entry.link, file=out)
+                print('<sha1>%s</sha1>' % entry.hash, file=out)
                 if entry.tags or entry.guessedTags:
-                    print >> out, '<tags>'
+                    print('<tags>', file=out)
                     for t in entry.tags:
-                        print >> out, '<tag guessed="false">%s</tag>' % xmlEncodedText(t)
+                        print('<tag guessed="false">%s</tag>' % xmlEncodedText(t), file=out)
                     for t in entry.guessedTags:
-                        print >> out, '<tag guessed="true">%s</tag>' % xmlEncodedText(t)
-                    print >> out, '</tags>'
-                print >> out, '<title>%s</title>' % entry.subject
+                        print('<tag guessed="true">%s</tag>' % xmlEncodedText(t), file=out)
+                    print('</tags>', file=out)
+                print('<title>%s</title>' % entry.subject, file=out)
                 if len(entry.message()):
-                    print >> out, '<message>%s</message>' % entry.message()
-                print >> out, '</commit>'
-            print >> out, '</commits>'
+                    print('<message>%s</message>' % entry.message(), file=out)
+                print('</commit>', file=out)
+            print('</commits>', file=out)
             out.close()
 
         elif format == 'deb':
@@ -306,7 +306,7 @@ class Changes:
             debVersion = build_version.DOOMSDAY_VERSION_FULL + '-' + Event().tag()
 
             # Always make one entry.
-            print 'Marking new version...'
+            print('Marking new version...')
             msg = 'New release: %s build %i.' % (build_version.DOOMSDAY_RELEASE_TYPE,
                                                  Event().number())
 
@@ -317,7 +317,7 @@ class Changes:
             for entry in self.debChangeEntries:
                 # Quote it for the command line.
                 qch = entry.replace('"', '\\"').replace('!', '\\!')
-                print ' *', qch
+                print(' *', qch)
                 os.system("dch --check-dirname-level 0 -a \"%s\"" % qch)
 
             os.system('dch --release ""')

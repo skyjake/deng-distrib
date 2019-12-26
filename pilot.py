@@ -1,8 +1,8 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # coding=utf-8
 #
 # The Doomsday Build Pilot
-# (c) 2011-2015 Jaakko Keränen <jaakko.keranen@iki.fi>
+# (c) 2011-2019 Jaakko Keränen <jaakko.keranen@iki.fi>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ import subprocess
 import pickle
 import struct
 import time
-import SocketServer
+import socketserver
 import builder.utils
 import builder.git
 
@@ -50,7 +50,7 @@ try:
     import pilotcfg
 except ImportError:
     if __name__ == '__main__':
-        print """Configuration needed: pilotcfg.py must be created in ~/.pilot/
+        print("""Configuration needed: pilotcfg.py must be created in ~/.pilot/
 
 pilotcfg.py contains information such as (global variables):
 - HOST: pilot server address (for clients)
@@ -62,7 +62,7 @@ pilotcfg.py contains information such as (global variables):
 - IGNORED_TASKS: list of tasks to quietly ignore (marked as complete)
 
 The function 'postTaskHook(task)' can be defined for actions to be carried out
-after a successful execution of a task."""
+after a successful execution of a task.""")
         sys.exit(1)
 
 APP_NAME = 'Doomsday Build Pilot'
@@ -78,16 +78,16 @@ def main():
         else:
             # Client mode. Check quietly for new tasks.
             checkForTasks()
-    except Exception, x:
+    except Exception as x:
         # Unexpected problem!
-	import traceback
-	traceback.print_exc()
-        print APP_NAME + ':', x
+        import traceback
+        traceback.print_exc()
+        print(APP_NAME + ':', x)
     finally:
         endPilotInstance()
 
 def msg(s):
-    print >> sys.stderr, s
+    print(s, file=sys.stderr)
 
 
 def isServer():
@@ -121,7 +121,7 @@ def switchToBranch(branch):
     """
     oldBranch = currentBranch()
     f = file(branchFileName(), 'wt')
-    print >> f, branch
+    print(branch, file=f)
     f.close()
     return branch != oldBranch
 
@@ -147,7 +147,7 @@ def markBranchHead(branch, commit):
     heads[branch] = commit
     f = file(headsFileName(), 'wt')
     for name in heads:
-        print >> f, "%s:%s" % (name, heads[name])
+        print("%s:%s" % (name, heads[name]), file=f)
     f.close()
 
 
@@ -161,8 +161,8 @@ def checkBranchHeadForChanges():
     branch = currentBranch()
     currentHead = builder.git.git_head()
     markedHead = markedBranchHead(branch)
-    print 'Current head:', currentHead
-    print 'Marked head:', markedHead
+    print('Current head:', currentHead)
+    print('Marked head:', markedHead)
     if currentHead == markedHead:
         return False
     markBranchHead(branch, currentHead)
@@ -220,7 +220,7 @@ def startNewPilotInstance():
         if not isStale(pid):
             # Cannot start right now -- will be retried later.
             sys.exit(0)
-    print >> file(pid, 'w'), str(os.getpid())
+    print(str(os.getpid()), file=file(pid, 'w'))
 
 
 def endPilotInstance():
@@ -246,10 +246,10 @@ def listTasks(clientId=None, includeCompleted=True, onlyCompleted=False,
                     tasks.append(subname[5:]) # Remove prefix.
 
     if not includeCompleted:
-        tasks = filter(lambda n: not n.endswith('.done'), tasks)
+        tasks = [n for n in tasks if not n.endswith('.done')]
 
     if onlyCompleted:
-        tasks = filter(lambda n: isTaskComplete(n), tasks)
+        tasks = [n for n in tasks if isTaskComplete(n)]
 
     tasks.sort()
     return tasks
@@ -261,7 +261,7 @@ def packs(s):
     return struct.pack('!i', len(s)) + s
 
 
-class ReqHandler(SocketServer.StreamRequestHandler):
+class ReqHandler(socketserver.StreamRequestHandler):
     """Handler for requests from clients."""
 
     def handle(self):
@@ -271,7 +271,7 @@ class ReqHandler(SocketServer.StreamRequestHandler):
             if type(self.request) != dict:
                 raise Exception("Requests must be of type 'dict'")
             self.doRequest()
-        except Exception, x:
+        except Exception as x:
             msg('Request failed: ' + str(x))
             response = { 'result': 'error', 'error': str(x) }
             self.respond(response)
@@ -312,8 +312,8 @@ class ReqHandler(SocketServer.StreamRequestHandler):
 
 
 def listen():
-    print APP_NAME + ' starting in server mode (port %i).' % pilotcfg.PORT
-    server = SocketServer.TCPServer(('0.0.0.0', pilotcfg.PORT), ReqHandler)
+    print(APP_NAME + ' starting in server mode (port %i).' % pilotcfg.PORT)
+    server = socketserver.TCPServer(('0.0.0.0', pilotcfg.PORT), ReqHandler)
     server.serve_forever()
 
 
@@ -451,7 +451,7 @@ def handleCompletedTasks():
 
         clearTask(task)
 
-        print "Task '%s' has been completed (noticed at %s)" % (task, time.asctime())
+        print("Task '%s' has been completed (noticed at %s)" % (task, time.asctime()))
 
         if task.startswith('buildfrom_'):
             # Commence with a build when everyone is ready.
@@ -504,9 +504,9 @@ def newTask(name, forClient=None, allClients=False):
         return
 
     path = os.path.join(homeDir(), forClient)
-    print "New task '%s' for client '%s'" % (name, forClient)
+    print("New task '%s' for client '%s'" % (name, forClient))
 
-    print >> file(os.path.join(path, 'task_' + name), 'wt'), time.asctime()
+    print(time.asctime(), file=file(os.path.join(path, 'task_' + name), 'wt'))
 
 
 def completeTask(name, byClient):
@@ -514,7 +514,7 @@ def completeTask(name, byClient):
     if not os.path.exists(path):
         raise Exception("Cannot complete missing task '%s' (by client '%s')" % (name, byClient))
 
-    print "Task '%s' completed by '%s' at" % (name, byClient), time.asctime()
+    print("Task '%s' completed by '%s' at" % (name, byClient), time.asctime())
     os.rename(path, path + '.done')
 
 

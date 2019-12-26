@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # coding=utf-8
 #
 # Script for performing automated build events.
@@ -28,7 +28,7 @@ def pull_from_branch():
 
 def create_build_event():
     """Creates and tags a new build for with today's number."""
-    print 'Creating a new build event.'
+    print('Creating a new build event.')
     git_pull()
 
     # Identifier/tag for today's build.
@@ -44,17 +44,15 @@ def create_build_event():
     # Save the version number and release type.
     import build_version
     build_version.find_version(quiet=True)
-    print >> file(ev.file_path('version.txt'), 'wt'), \
-        build_version.DOOMSDAY_VERSION_FULL
-    print >> file(ev.file_path('releaseType.txt'), 'wt'), \
-        build_version.DOOMSDAY_RELEASE_TYPE
+    print(build_version.DOOMSDAY_VERSION_FULL, file=file(ev.file_path('version.txt'), 'wt'))
+    print(build_version.DOOMSDAY_RELEASE_TYPE, file=file(ev.file_path('releaseType.txt'), 'wt'))
 
     update_changes()
 
 
 def todays_platform_release():
     """Build today's release for the current platform."""
-    print "Building today's build."
+    print("Building today's build.")
     ev = builder.Event()
 
     git_pull()
@@ -66,11 +64,11 @@ def todays_platform_release():
     oldFiles = DirState('releases', subdirs=False)
 
     try:
-        print 'platform_release.py...'
+        print('platform_release.py...')
         run_python2("platform_release.py > %s 2> %s" % \
             ('buildlog.txt', 'builderrors.txt'))
-    except Exception, x:
-        print 'Error during platform_release:', x
+    except Exception as x:
+        print('Error during platform_release:', x)
 
     for n in DirState('releases', subdirs=False).list_new_files(oldFiles):
         # Copy any new files.
@@ -99,7 +97,7 @@ def todays_platform_release():
 def sign_packages():
     """Sign all packages in the latest build."""
     ev = builder.Event(latestAvailable=True)
-    print "Signing build %i." % ev.number()
+    print("Signing build %i." % ev.number())
     for fn in os.listdir(ev.path()):
         if fn.endswith('.msi') or fn.endswith('.exe') or fn.endswith('.dmg') or fn.endswith('.deb'):
             # Make a signature for this.
@@ -109,7 +107,7 @@ def sign_packages():
 def publish_packages():
     """Publish all packages to SourceForge."""
     ev = builder.Event(latestAvailable=True)
-    print "Publishing build %i." % ev.number()
+    print("Publishing build %i." % ev.number())
     system_command('deng_copy_build_to_sourceforge.sh "%s"' % ev.path())
 
 
@@ -127,7 +125,7 @@ def find_previous_tag(toTag, version):
     """
     builds = builder.events_by_time() # descending by timestamp
 
-    print "Finding previous build for %s (version:%s)" % (toTag, version)
+    print("Finding previous build for %s (version:%s)" % (toTag, version))
 
     # Disregard builds later than `toTag`.
     while len(builds) and builds[0][1].tag() != toTag:
@@ -137,7 +135,7 @@ def find_previous_tag(toTag, version):
         return None
 
     for timestamp, ev in builds:
-        print ev.tag(), ev.version(), time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(ev.timestamp()))
+        print(ev.tag(), ev.version(), time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(ev.timestamp())))
 
         if version is None:
             # Anything goes.
@@ -171,7 +169,7 @@ def update_changes(debChanges=False):
         # Range not defined.
         return
 
-    print 'Changes for range', fromTag, '..', toTag
+    print('Changes for range', fromTag, '..', toTag)
 
     changes = builder.Changes(fromTag, toTag)
 
@@ -204,7 +202,7 @@ def build_source_package():
     update_debian_changelog()
     git_pull()
     ev = builder.Event(latestAvailable=True)
-    print "Creating source tarball for build %i." % ev.number()
+    print("Creating source tarball for build %i." % ev.number())
 
     # Check distribution.
     system_command("lsb_release -a | perl -n -e 'm/Codename:\s(.+)/ && print $1' > /tmp/distroname")
@@ -223,7 +221,7 @@ def build_source_package():
             os.chdir('srcwork')
 
             if ev.release_type() == 'stable':
-                print 'Stable packages will be prepared'
+                print('Stable packages will be prepared')
                 system_command('deng_package_source.sh stable %i %s' % (ev.number(), ev.version_base()))
                 pkgName += '-stable'
             else:
@@ -237,21 +235,21 @@ def build_source_package():
             pkgVer = '%s.%i+%s' % (ev.version_base(), ev.number(), distro)
             pkgDir = pkgName + '-%s' % pkgVer
 
-            print "Extracting", fn
+            print("Extracting", fn)
             system_command('tar xzf %s' % fn)
-            print "Renaming", fn[:-7], 'to', pkgDir + '.orig'
+            print("Renaming", fn[:-7], 'to', pkgDir + '.orig')
             os.rename(fn[:-7], pkgDir + '.orig')
-            print "Renamed."
+            print("Renamed.")
 
             origName = pkgName + '_%s' % ev.version_base() + '.orig.tar.gz'
-            print "Symlink to", origName
+            print("Symlink to", origName)
             system_command('ln -s %s %s' % (fn, origName))
 
-            print "Extracting", fn
+            print("Extracting", fn)
             system_command('tar xzf %s' % fn)
-            print "Renaming", fn[:-7], 'to', pkgDir
+            print("Renaming", fn[:-7], 'to', pkgDir)
             os.rename(fn[:-7], pkgDir)
-            print "Renamed."
+            print("Renamed.")
 
             os.chdir(pkgDir)
             #system_command('echo "" | dh_make --yes -s -c gpl2 --file ../%s' % fn)
@@ -305,7 +303,7 @@ def build_source_package():
 def rebuild_apt_repository():
     """Rebuilds the Apt repository by running apt-ftparchive."""
     aptDir = builder.config.APT_REPO_DIR
-    print 'Rebuilding the apt repository in %s...' % aptDir
+    print('Rebuilding the apt repository in %s...' % aptDir)
 
     os.system("apt-ftparchive generate ~/Dropbox/APT/ftparchive.conf")
     os.system("apt-ftparchive -c %s release %s/%s > %s/%s/Release" % (builder.config.APT_CONF_FILE, aptDir, builder.config.APT_DIST, aptDir, builder.config.APT_DIST))
@@ -327,23 +325,23 @@ def purge_obsolete():
     totalCount = len(builder.find_old_events(0))
 
     # Purge the old events.
-    print 'Deleting build events older than 4 weeks...'
+    print('Deleting build events older than 4 weeks...')
     for ev in builder.find_old_events(threshold):
         if totalCount > 5:
-            print ev.tag()
+            print(ev.tag())
             shutil.rmtree(ev.path())
             totalCount -= 1
 
-    print 'Purge done.'
+    print('Purge done.')
 
 
 def dir_cleanup():
     """Purges empty build directories from the event directory."""
-    print 'Event directory cleanup starting...'
+    print('Event directory cleanup starting...')
     for emptyEventPath in builder.find_empty_events():
-        print 'Deleting', emptyEventPath
+        print('Deleting', emptyEventPath)
         os.rmdir(emptyEventPath)
-    print 'Cleanup done.'
+    print('Cleanup done.')
 
 
 def system_command(cmd):
@@ -356,17 +354,17 @@ def generate_apidoc():
     """Run Doxygen to generate all API documentation."""
     git_pull()
 
-    print >> sys.stderr, "\nSDK docs..."
+    print("\nSDK docs...", file=sys.stderr)
     os.chdir(os.path.join(builder.config.DOOMSDAY_DIR, 'doomsday'))
     system_command('doxygen sdk.doxy >/dev/null 2>doxyissues-sdk.txt')
     system_command('wc -l doxyissues-sdk.txt')
 
-    print >> sys.stderr, "\nSDK docs for Qt Creator..."
+    print("\nSDK docs for Qt Creator...", file=sys.stderr)
     os.chdir(os.path.join(builder.config.DOOMSDAY_DIR, 'doomsday'))
     system_command('doxygen sdk-qch.doxy >/dev/null 2>doxyissues-qch.txt')
     system_command('wc -l doxyissues-qch.txt')
 
-    print >> sys.stderr, "\nPublic API docs..."
+    print("\nPublic API docs...", file=sys.stderr)
     os.chdir(os.path.join(builder.config.DOOMSDAY_DIR, 'doomsday/apps/libdoomsday'))
     system_command('doxygen api.doxy >/dev/null 2>../../doxyissues-api.txt')
     system_command('wc -l ../../doxyissues-api.txt')
@@ -390,13 +388,13 @@ def show_help():
     """Prints a description of each command."""
     for cmd in sorted_commands():
         if commands[cmd].__doc__:
-            print "%-17s " % (cmd + ":") + commands[cmd].__doc__
+            print("%-17s " % (cmd + ":") + commands[cmd].__doc__)
         else:
-            print cmd
+            print(cmd)
 
 
 def sorted_commands():
-    sc = commands.keys()
+    sc = list(commands.keys())
     sc.sort()
     return sc
 
@@ -420,19 +418,19 @@ commands = {
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print 'The arguments must be: (command) [args]'
-        print 'Commands:', string.join(sorted_commands())
-        print 'Arguments:'
-        print '--branch    Branch to use (default: master)'
-        print '--distrib   "deng-distrib" directory'
-        print '--doomsday  Doomsday source root directory'
-        print '--events    Event directory (builds are stored here in subdirs)'
-        print '--apt       Apt repository'
-        print '--tagmod    Additional suffix for build tag for platform_release'
+        print('The arguments must be: (command) [args]')
+        print('Commands:', string.join(sorted_commands()))
+        print('Arguments:')
+        print('--branch    Branch to use (default: master)')
+        print('--distrib   "deng-distrib" directory')
+        print('--doomsday  Doomsday source root directory')
+        print('--events    Event directory (builds are stored here in subdirs)')
+        print('--apt       Apt repository')
+        print('--tagmod    Additional suffix for build tag for platform_release')
         sys.exit(1)
 
     if sys.argv[1] not in commands:
-        print 'Unknown command:', sys.argv[1]
+        print('Unknown command:', sys.argv[1])
         sys.exit(1)
 
     commands[sys.argv[1]]()

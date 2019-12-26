@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Parsing the current Doomsday version and release type from headers.
 
 import os, sys, re
@@ -43,7 +44,7 @@ def parse_cmake_for_version(cmakeFile):
     return (versionMajor, versionMinor, versionRevision, versionName, releaseType)
 
 def find_version(quiet = False):
-    if not quiet: print "Determining Doomsday version...",
+    if not quiet: print("Determining Doomsday version...", end=' ')
     
     versionMajor, versionMinor, versionRevision, versionName, releaseType = \
         parse_cmake_for_version(os.path.join(DOOMSDAY_DIR, 'cmake', 'Version.cmake'))
@@ -67,7 +68,7 @@ def find_version(quiet = False):
     DOOMSDAY_VERSION_MINOR = versionMinor
     DOOMSDAY_VERSION_REVISION = versionRevision
 
-    if not quiet: print DOOMSDAY_VERSION_FULL + " (%s)" % releaseType
+    if not quiet: print(DOOMSDAY_VERSION_FULL + " (%s)" % releaseType)
 
 
 def version_summary(cmakeName):
@@ -87,4 +88,4 @@ def version_summary(cmakeName):
         
 # Invoked from qmake? Returns "version_base buildnum releasetype win32_version_with_buildnum"
 if __name__ == '__main__':
-    print version_summary(sys.argv[1])
+    print(version_summary(sys.argv[1]))

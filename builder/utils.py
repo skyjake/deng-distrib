@@ -7,11 +7,11 @@ import gzip
 import codecs
 import time
 import build_number
-import config
+from . import config
 
 def remkdir(n):
     if os.path.exists(n):
-        print n, 'exists, clearing it...'
+        print(n, 'exists, clearing it...')
         shutil.rmtree(n, True)
     os.mkdir(n)
     
@@ -143,8 +143,8 @@ def aptrepo_find_latest_tag():
 def count_log_word(fn, word):
     count = 0
     try:
-        for txt in [unicode(rl, 'latin1').lower() for rl in string.split(gzip.open(fn).read(), '\n')]:
-            pos = txt.find(unicode(word))
+        for txt in [str(rl, 'latin1').lower() for rl in string.split(gzip.open(fn).read(), '\n')]:
+            pos = txt.find(str(word))
             if pos < 0: continue 
             endPos = pos + len(word)
             # Ignore some unnecessary messages.
@@ -198,7 +198,7 @@ def mac_os_version():
 
 
 def version_split(versionText):
-    return map(int, versionText.split('.'))
+    return list(map(int, versionText.split('.')))
 
 
 def version_cmp(a, b):

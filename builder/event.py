@@ -1,7 +1,7 @@
 import os, glob, shutil, time
 import build_number
-import config
-import utils
+from . import config
+from . import utils
 import xml.etree.ElementTree as ElementTree
 
 def log_filename(package, osIdent, ext='txt.gz'):
@@ -131,7 +131,7 @@ class Event:
                 osx = '_osx' + n[8] + '_'
                 if osx in name:
                     found = (n, ext, ident)
-        if not found: print 'OS unknown for', name, self.oses
+        if not found: print('OS unknown for', name, self.oses)
         return found
                 
     def version_from_filename(self, name):
@@ -245,7 +245,7 @@ class Event:
                     tagCount[tag.text] += 1
                 else:
                     tagCount[tag.text] = 1
-            tags = sorted([(tagCount[t], t) for t in tagCount.keys()])
+            tags = sorted([(tagCount[t], t) for t in list(tagCount.keys())])
             tags.reverse()  
             tags = tags[:5] # up to 5 most used tags
             
@@ -509,7 +509,7 @@ def find_empty_events(baseDir=None):
     """Returns a list of build directory paths."""
     result = []
     if not baseDir: baseDir = config.EVENT_DIR
-    print 'Finding empty subdirs in', baseDir
+    print('Finding empty subdirs in', baseDir)
     for fn in os.listdir(baseDir):
         path = os.path.join(baseDir, fn)
         if os.path.isdir(path):

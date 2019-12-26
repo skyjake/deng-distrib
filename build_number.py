@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # Determining the number of a build.
 
 import time
@@ -9,4 +9,4 @@ def todays_build():
     return str((now.tm_year - 2011)*365 + now.tm_yday)
     
 if '--print' in sys.argv:
-    print todays_build()
+    print(todays_build())
