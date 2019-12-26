@@ -238,7 +238,7 @@ def main():
         elif sys.platform == "win32":
             print("Windows")
             win_release()
-        elif sys.platform == "linux2":
+        elif sys.platform == "linux2" or sys.platform == "linux":
             print("Linux")
             linux_release()
         else:
