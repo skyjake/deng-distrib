@@ -11,7 +11,7 @@ def log_filename(package, osIdent, ext='txt.gz'):
 class Event:
     """Build event. Manages the contents of a single build directory under
     the event directory."""
-    
+
     def __init__(self, build=None, latestAvailable=False):
         """Any .txt logs present in the build directory are compressed into
         a combined .txt.gz (one per package)."""
@@ -22,7 +22,7 @@ class Event:
             while not os.path.exists(os.path.join(config.EVENT_DIR, 'build%i' % build)):
                 build -= 1
                 if build == 0: raise Exception("No builds available")
-        
+
         if build is None:
             # Use today's build number.
             self.name = 'build' + build_number.todays_build()
@@ -31,22 +31,22 @@ class Event:
             self.name = 'build' + str(build)
             self.num = build
         elif type(build) == str:
-            if build[:5] != 'build': 
+            if build[:5] != 'build':
                 raise Exception("Event build name must begin with 'build'")
             self.name = build
             self.num = int(build[5:])
 
         # Where the build is located.
         self.buildDir = os.path.join(config.EVENT_DIR, self.name)
-        
+
         self.packages = ['doomsday', 'doomsday_app', 'doomsday_shell_app', 'fmod']
-        
+
         self.packageName = {'doomsday':           'Doomsday',
                             'doomsday_apps':      'OS X Apps',
                             'doomsday_app':       'Doomsday Engine.app',
                             'doomsday_shell_app': 'Doomsday Shell.app',
                             'fmod':               'FMOD Ex Audio Plugin'}
-        
+
         if self.num >= 816: # Added Mac OS X 10.8.
             # Platforms:  Name                             File ext          sys_id()
             self.oses = [('Windows (32-bit)',              ('.exe', '.msi', 'x86.zip'),  'win32-32bit'),
@@ -68,7 +68,7 @@ class Event:
                     del self.oses[4] # no more OS X 10.4
                 if self.num >= 1212 and utils.version_cmp(self.version_base(), '1.15') >= 0:
                     del self.oses[3] # no more OS X 10.6
-                
+
         elif self.num >= 778: # Mac distribution naming was changed.
             # Platforms:  Name                            File ext     sys_id()
             self.oses = [('Windows (x86)',                '.exe',      'win32-32bit'),
@@ -83,7 +83,7 @@ class Event:
                          ('Mac OS X 10.4+ (ppc/i386)',    '.dmg',      'darwin-32bit'),
                          ('Mac OS X 10.6+ (x86_64/i386)', '64bit.dmg', 'darwin-64bit'),
                          ('Ubuntu (x86)',                 'i386.deb',  'linux2-32bit'),
-                         ('Ubuntu (x86_64)',              'amd64.deb', 'linux2-64bit')]            
+                         ('Ubuntu (x86_64)',              'amd64.deb', 'linux2-64bit')]
 
         self.platId = {'win64-64bit':  'win-x64',
                        'win32-32bit':  'win-x86',
@@ -97,7 +97,7 @@ class Event:
 
         # Prepare compiler logs present in the build dir.
         self.compress_logs()
-        
+
     def package_type(self, name):
         pkg = self.package_from_filename(name)
         if pkg == 'fmod':
@@ -115,10 +115,10 @@ class Event:
         if 'fmod' in name:
             return 'fmod'
         else:
-            return 'doomsday'        
-    
+            return 'doomsday'
+
     def os_from_filename(self, name):
-        found = None        
+        found = None
         for n, osExt, ident in self.oses:
             if type(osExt) == 'tuple':
                 exts = osExt
@@ -133,9 +133,9 @@ class Event:
                     found = (n, ext, ident)
         if not found: print('OS unknown for', name, self.oses)
         return found
-                
+
     def version_from_filename(self, name):
-        ver = self.extract_version_from_filename(name)        
+        ver = self.extract_version_from_filename(name)
         if not ver and self.package_from_filename(name) != 'fmod':
             # Fall back to the event version, if it exists.
             ev = self.version()
@@ -158,43 +158,43 @@ class Event:
         elif dash > 0 and us > 0:
             return name[pos+1:min(dash, us)]
         return name[pos+1:name.rfind('.', pos)]
-        
+
     def tag(self):
         return self.name
-        
+
     def version_base(self):
         ver = self.version()
         if '-' in ver: ver = ver[:ver.find('-')]
         return ver
-        
+
     def version(self):
         fn = self.file_path('version.txt')
-        if os.path.exists(fn): return file(fn).read().strip()
+        if os.path.exists(fn): return open(fn).read().strip()
         return None
-        
+
     def has_version(self):
         return os.path.exists(self.file_path('version.txt'))
-        
+
     def name(self):
         return self.name
-        
+
     def number(self):
         """Returns the event's build number as an integer."""
         return self.num
-        
+
     def path(self):
         return self.buildDir
-        
+
     def file_path(self, fileName):
         return os.path.join(self.buildDir, fileName)
-        
+
     def clean(self):
         # Make sure we have a clean directory for this build.
         if os.path.exists(self.buildDir):
             # Kill it and recreate.
             shutil.rmtree(self.buildDir, True)
-        os.mkdir(self.buildDir)        
-        
+        os.mkdir(self.buildDir)
+
     def list_package_files(self):
         files = glob.glob(os.path.join(self.buildDir, '*.dmg')) + \
                 glob.glob(os.path.join(self.buildDir, '*.msi')) + \
@@ -202,7 +202,7 @@ class Event:
                 glob.glob(os.path.join(self.buildDir, '*.deb')) + \
                 glob.glob(os.path.join(self.buildDir, '*.rpm')) + \
                 glob.glob(os.path.join(self.buildDir, '*.tar.gz'))
-            
+
         if self.num > 1201:
             # Zipped apps added.
             files += glob.glob(os.path.join(self.buildDir, '*.zip'))
@@ -219,24 +219,24 @@ class Event:
             if int(t.st_mtime) < oldest:
                 oldest = int(t.st_mtime)
 
-        return oldest        
-        
+        return oldest
+
     def text_timestamp(self):
         return time.strftime(config.RFC_TIME, time.gmtime(self.timestamp()))
-    
+
     def text_summary(self):
         """Composes a textual summary of the event."""
-        
+
         msg = "The autobuilder started build %i on %s" % (self.number(), self.text_timestamp())
 
         pkgCount = len(self.list_package_files())
         msg += " and produced %i package%s." % \
             (pkgCount, 's' if pkgCount != 1 else '')
-        
+
         # Parse the description of the changes.
         changesFn = self.file_path('changes.xml')
         if os.path.exists(changesFn):
-            src = file(changesFn, 'rt')
+            src = open(changesFn, 'rt')
             root = ElementTree.fromstring('<changes>' + src.read() + '</changes>')
             commitCount = int(root.find('commitCount').text)
             tagCount = {}
@@ -246,9 +246,9 @@ class Event:
                 else:
                     tagCount[tag.text] = 1
             tags = sorted([(tagCount[t], t) for t in list(tagCount.keys())])
-            tags.reverse()  
+            tags.reverse()
             tags = tags[:5] # up to 5 most used tags
-            
+
             msg += ' The build contains %i commit%s' % (commitCount, 's' if commitCount != 1 else '')
             if len(tags):
                 msg += ', and the most used tag%s: ' % ('s are' if len(tags) != 1 else ' is')
@@ -257,12 +257,12 @@ class Event:
                 else:
                     msg += tags[0][1]
             msg += '.'
-            
+
         return msg
-        
+
     def compress_logs(self):
         if not os.path.exists(self.buildDir): return
-        
+
         """Combines the stdout and stderr logs for a package and compresses
         them with gzip (requires gzip on the system path)."""
         for package in self.packages:
@@ -271,14 +271,14 @@ class Event:
                 if not names: continue
                 # Join the logs into a single file.
                 combinedName = self.file_path('buildlog-%s-%s.txt' % (package, osIdent))
-                combined = file(combinedName, 'wt')
+                combined = open(combinedName, 'wt')
                 for n in sorted(names):
-                    combined.write(file(n).read() + "\n\n")
+                    combined.write(open(n).read() + "\n\n")
                     # Remove the original log.
                     os.remove(n)
-                combined.close()            
-                os.system('gzip -f9 %s' % combinedName)        
-                
+                combined.close()
+                os.system('gzip -f9 %s' % combinedName)
+
     def download_uri(self, fn):
         # Available on SourceForge?
         if self.number() >= 350 and (fn.endswith('.msi') or fn.endswith('.exe') or fn.endswith('.deb') or
@@ -290,12 +290,12 @@ class Event:
                 return "http://sourceforge.net/projects/deng/files/Doomsday%%20Engine/Builds/%s/download" % fn
         # Default to the old location.
         return "%s/%s/%s" % (config.BUILD_URI, self.name, fn)
-        
+
     def download_fallback_uri(self, fn):
         return "%s/%s/%s" % (config.BUILD_URI, self.name, fn)
-                
+
     def compressed_log_filename(self, binaryFn):
-        return log_filename(self.package_from_filename(binaryFn), 
+        return log_filename(self.package_from_filename(binaryFn),
                             self.os_from_filename(binaryFn)[2])
 
     def sort_by_package(self, binaries):
@@ -305,12 +305,12 @@ class Event:
             pl.append((self.package_from_filename(bin), bin))
         pl.sort()
         return [bin for pkg, bin in pl]
-               
+
     def html_table_log_issues(self, logName):
         # Link to the compressed log.
         msg = '<td><a href="%s">txt.gz</a>' % self.download_uri(logName)
 
-        # Show a traffic light indicator based on warning and error counts.              
+        # Show a traffic light indicator based on warning and error counts.
         errors, warnings = utils.count_log_issues(self.file_path(logName))
         form = '<td bgcolor="%s" style="text-align:center;">'
         if errors > 0:
@@ -319,10 +319,10 @@ class Event:
             msg += form % '#ffee00' # yellow
         else:
             msg += form % '#00ee00' # green
-        msg += str(errors + warnings)        
+        msg += str(errors + warnings)
 
         return msg
-                
+
     def html_description(self, encoded=True):
         """Composes an HTML build report."""
 
@@ -351,12 +351,12 @@ class Event:
             if not binaries:
                 # Nothing available for this OS.
                 msg += '<tr><td>' + osName + '<td>n/a'
-                
+
                 # Do we have a log?
                 logName = log_filename(self.packages[0], osIdent)
                 if os.path.exists(self.file_path(logName)):
                     msg += self.html_table_log_issues(logName)
-                
+
                 msg += '</tr>'
                 continue
 
@@ -375,7 +375,7 @@ class Event:
                 logName = self.compressed_log_filename(binary)
                 if not os.path.exists(self.file_path(logName)):
                     msg += '</tr>'
-                    continue                            
+                    continue
 
                 # Link to the compressed log.
                 msg += self.html_table_log_issues(logName)
@@ -387,35 +387,35 @@ class Event:
         # Changes.
         chgFn = self.file_path('changes.html')
         if os.path.exists(chgFn):
-            if utils.count_word('<li>', file(chgFn).read()):
-                msg += '<h2>Commits</h2>' + file(chgFn, 'rt').read()
+            if utils.count_word('<li>', open(chgFn).read()):
+                msg += '<h2>Commits</h2>' + open(chgFn, 'rt').read()
 
         # Enclose it in a CDATA block if needed.
-        if encoded: return '<![CDATA[' + msg + ']]>'    
+        if encoded: return '<![CDATA[' + msg + ']]>'
         return msg
-        
+
     def release_type(self):
         """Returns the release type as a lower-case string."""
         fn = self.file_path('releaseType.txt')
         if os.path.exists(fn):
-            return file(fn).read().lower().strip()
+            return open(fn).read().lower().strip()
         return 'unstable' # Default assumption.
-        
+
     def xml_log(self, logName):
         msg = '<compileLogUri>%s</compileLogUri>' % self.download_uri(logName)
         errors, warnings = utils.count_log_issues(self.file_path(logName))
         msg += '<compileWarnCount>%i</compileWarnCount>' % warnings
         msg += '<compileErrorCount>%i</compileErrorCount>' % errors
         return msg
-    
+
     def release_notes_uri(self, version):
         return "http://dengine.net/dew/index.php?title=Doomsday_version_" + version
-        
+
     def changelog_uri(self, version):
         if self.release_type() == 'stable':
             return self.release_notes_uri(version)
         else:
-            return "http://files.dengine.net/builds/" + self.name          
+            return "http://files.dengine.net/builds/" + self.name
 
     # def xml_description(self):
     #     msg = '<build>'
@@ -472,7 +472,7 @@ class Event:
     #     # Commits.
     #     chgFn = self.file_path('changes.xml')
     #     if os.path.exists(chgFn):
-    #         msg += file(chgFn, 'rt').read()
+    #         msg += open(chgFn, 'rt').read()
     #
     #     return msg + '</build>'
 
@@ -503,7 +503,7 @@ def find_old_events(atLeastSecs):
         if now - ev.timestamp() >= atLeastSecs:
             result.append(ev)
     return result
-    
+
 
 def find_empty_events(baseDir=None):
     """Returns a list of build directory paths."""

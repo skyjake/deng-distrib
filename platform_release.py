@@ -159,7 +159,7 @@ def cmake_release(makeOptions, outputGlobs):
         os.chdir(WORK_DIR)
 
         try:
-            postCommand = file(os.path.join(LAUNCH_DIR, 'postcommand.txt'), 'rt').read()
+            postCommand = open(os.path.join(LAUNCH_DIR, 'postcommand.txt'), 'rt').read()
         except:
             postCommand = None
 

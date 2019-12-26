@@ -111,10 +111,10 @@ class Changes:
 
         os.chdir(config.DOOMSDAY_DIR)
         os.system("git log %s..%s --format=\"%s\" >> %s" % (self.fromTag, self.toTag, format, tmpName))
-        logText = str(file(tmpName, 'rt').read(), 'utf-8')
+        logText = str(open(tmpName, 'rt').read(), 'utf-8')
         os.remove(tmpName)
         os.chdir(oldDir)
-        
+
         pos = 0
         self.entries = []
         self.debChangeEntries = []
@@ -229,7 +229,7 @@ class Changes:
         toTag = self.toTag
 
         if format == 'html':
-            out = file(Event(toTag).file_path('changes.html'), 'wt')
+            out = open(Event(toTag).file_path('changes.html'), 'wt')
 
             MAX_COMMITS = 100
             entries = self.entries[:MAX_COMMITS]
@@ -270,7 +270,7 @@ class Changes:
             out.close()
 
         elif format == 'xml':
-            out = file(Event(toTag).file_path('changes.xml'), 'wt')
+            out = open(Event(toTag).file_path('changes.xml'), 'wt')
             print('<commitCount>%i</commitCount>' % len(self.entries), file=out)
             print('<commits>', file=out)
             for entry in self.entries:

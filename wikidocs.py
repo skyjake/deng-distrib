@@ -12,13 +12,13 @@ is_dry_run = '--dry-run' in sys.argv
 comment = 'Generated from Amethyst source by wikidocs.py'
 build_version.find_version(quiet=True)
 
-    
+
 def amethyst(input, ame_opts=[]):
     """Runs amethyst with the given input and returns the output."""
-    p = subprocess.Popen(['amethyst', '-dDOKUWIKI'] + ame_opts, 
+    p = subprocess.Popen(['amethyst', '-dDOKUWIKI'] + ame_opts,
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (output, errs) = p.communicate(input)
-    return output    
+    return output
 
 #
 # for col in collections:
@@ -49,7 +49,7 @@ def amethyst(input, ame_opts=[]):
 #             templ += '@macro{params}{@break === Usage === @break @arg}\n'
 #             templ += '@macro{example}{@break === Example === @break @arg}\n'
 #             templ += '@begin\n' + \
-#                  file(os.path.join(dirName, fn)).read()
+#                  open(os.path.join(dirName, fn)).read()
 #
 #             templ += '\n[[Category:%s]] @br\n' % categoryForMode(mode)
 #             templ += '[[Category:%s]]\n' % categoryForCollection(col, mode)
@@ -68,7 +68,7 @@ def amethyst(input, ame_opts=[]):
 #             templ += '@macro{description}{}\n'
 #             templ += '@macro{cbr}{}\n'
 #             templ += '@begin\n' + \
-#                  file(os.path.join(dirName, fn)).read()
+#                  open(os.path.join(dirName, fn)).read()
 #
 #             page.name = name
 #             page.summary = amethyst(templ).strip()
@@ -80,8 +80,8 @@ src_root = os.path.join(builder.config.DOOMSDAY_DIR, 'doomsday/doc')
 
 pages = [
     ('%s:readme_windows' % prefix, ['-dWIN32'], 'readme/readme.ame'),
-    ('%s:readme_macos' % prefix, ['-dMACOSX'], 'readme/readme.ame'),  
-    ('%s:man:doomsday' % prefix, ['-dUNIX', '-dMANPAGE'], 'readme/readme.ame'), 
+    ('%s:readme_macos' % prefix, ['-dMACOSX'], 'readme/readme.ame'),
+    ('%s:man:doomsday' % prefix, ['-dUNIX', '-dMANPAGE'], 'readme/readme.ame'),
     ('%s:man:doomsday-server' % prefix, ['-dUNIX', '-dMANPAGE'], 'server/server.ame'),
     ('%s:man:doomsday-shell-text' % prefix, ['-dUNIX', '-dMANPAGE'], 'shell-text/shell-text.ame'),
 ]
@@ -95,21 +95,21 @@ for page in pages:
     src = open(ame_path, 'rt').read()
     opts = page[1] + ['-i'+ame_dir]
     content.append( (page[0], amethyst(src, ame_opts=opts)) )
-    
-                                        
+
+
 if is_dry_run:
     print(content)
-    sys.exit()   
-    
-        
+    sys.exit()
+
+
 dew.login()
 
 print('Writing %i pages to Manual:' % len(content))
-        
+
 for c in content:
     print('... %s' % c[0])
     dew.submit_page(c[0], c[1], comment)
-        
+
 #dew.submitPage('Console command reference', indexPage['command'], comment)
 #dew.submitPage('Console variable reference', indexPage['variable'], comment)
 #

@@ -5,7 +5,7 @@ import os, sys, re
 import string
 
 DOOMSDAY_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'deng', 'doomsday')
-    
+
 DOOMSDAY_VERSION_FULL = "0.0.0-Name"
 DOOMSDAY_VERSION_FULL_PLAIN = "0.0.0"
 DOOMSDAY_VERSION_MAJOR = 0
@@ -19,10 +19,10 @@ def parse_cmake_for_version(cmakeFile):
     versionRevision = 0
     versionName = ""
     releaseType = ""
-    
-    f = file(cmakeFile, 'rt')
+
+    f = open(cmakeFile, 'rt')
     for line in f.readlines():
-        if line[:3] == "set": 
+        if line[:3] == "set":
             major = re.search(r'DENG_VERSION_MAJOR.*([0-9]+)', line)
             if major:
                 versionMajor = int(major.group(1))
@@ -39,13 +39,13 @@ def parse_cmake_for_version(cmakeFile):
             relType = re.search(r'^\s*[^\#]\s*(Unstable|Candidate|Stable)', line)
             if relType:
                 releaseType = relType.group(1)
-                continue            
-            
+                continue
+
     return (versionMajor, versionMinor, versionRevision, versionName, releaseType)
 
 def find_version(quiet = False):
     if not quiet: print("Determining Doomsday version...", end=' ')
-    
+
     versionMajor, versionMinor, versionRevision, versionName, releaseType = \
         parse_cmake_for_version(os.path.join(DOOMSDAY_DIR, 'cmake', 'Version.cmake'))
     if not releaseType: releaseType = "Unstable"
@@ -58,12 +58,12 @@ def find_version(quiet = False):
     global DOOMSDAY_VERSION_MINOR
     global DOOMSDAY_VERSION_REVISION
     global DOOMSDAY_RELEASE_TYPE
-    
+
     DOOMSDAY_RELEASE_TYPE = releaseType
     DOOMSDAY_VERSION_FULL_PLAIN = versionBase
     DOOMSDAY_VERSION_FULL = versionBase
     if versionName:
-        DOOMSDAY_VERSION_FULL += "-" + versionName    
+        DOOMSDAY_VERSION_FULL += "-" + versionName
     DOOMSDAY_VERSION_MAJOR = versionMajor
     DOOMSDAY_VERSION_MINOR = versionMinor
     DOOMSDAY_VERSION_REVISION = versionRevision
@@ -78,14 +78,14 @@ def version_summary(cmakeName):
 
     # Get the Doomsday version. We can use some of this information.
     find_version(True)
-    
+
     major, minor, revision, name, reltype = parse_cmake_for_version(cmakeName)
     if not reltype: reltype = DOOMSDAY_RELEASE_TYPE
-    
+
     return "%s.%s.%s %s %s %s,%s,%s,%s" % (major, minor, revision, buildNum, reltype,
                                            major, minor, revision, buildNum)
 
-        
+
 # Invoked from qmake? Returns "version_base buildnum releasetype win32_version_with_buildnum"
 if __name__ == '__main__':
     print(version_summary(sys.argv[1]))

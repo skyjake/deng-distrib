@@ -110,7 +110,7 @@ def headsFileName():
 def currentBranch():
     if not os.path.exists(branchFileName()):
         return 'master' # default branch
-    return file(branchFileName(), 'rt').read().strip()
+    return open(branchFileName(), 'rt').read().strip()
 
 
 def switchToBranch(branch):
@@ -120,7 +120,7 @@ def switchToBranch(branch):
         True, if the branch was changed; otherwise False.
     """
     oldBranch = currentBranch()
-    f = file(branchFileName(), 'wt')
+    f = open(branchFileName(), 'wt')
     print(branch, file=f)
     f.close()
     return branch != oldBranch
@@ -129,7 +129,7 @@ def switchToBranch(branch):
 def readBranchHeads():
     heads = {}
     if os.path.exists(headsFileName()):
-        for line in file(headsFileName(), 'rt').readlines():
+        for line in open(headsFileName(), 'rt').readlines():
             name, commit = line.strip().split(':')
             heads[name] = commit
     return heads
@@ -145,7 +145,7 @@ def markedBranchHead(branch):
 def markBranchHead(branch, commit):
     heads = readBranchHeads()
     heads[branch] = commit
-    f = file(headsFileName(), 'wt')
+    f = open(headsFileName(), 'wt')
     for name in heads:
         print("%s:%s" % (name, heads[name]), file=f)
     f.close()
@@ -220,7 +220,7 @@ def startNewPilotInstance():
         if not isStale(pid):
             # Cannot start right now -- will be retried later.
             sys.exit(0)
-    print(str(os.getpid()), file=file(pid, 'w'))
+    print(str(os.getpid()), file=open(pid, 'w'))
 
 
 def endPilotInstance():
@@ -506,7 +506,7 @@ def newTask(name, forClient=None, allClients=False):
     path = os.path.join(homeDir(), forClient)
     print("New task '%s' for client '%s'" % (name, forClient))
 
-    print(time.asctime(), file=file(os.path.join(path, 'task_' + name), 'wt'))
+    print(time.asctime(), file=open(os.path.join(path, 'task_' + name), 'wt'))
 
 
 def completeTask(name, byClient):

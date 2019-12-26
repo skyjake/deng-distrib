@@ -14,8 +14,8 @@ def remkdir(n):
         print(n, 'exists, clearing it...')
         shutil.rmtree(n, True)
     os.mkdir(n)
-    
-    
+
+
 def deltree(n):
     if os.path.exists(n):
         shutil.rmtree(n, True)
@@ -35,7 +35,7 @@ class FileState:
         else:
             self.type = 'file'
         self.mtime = int(mtime)
-        
+
     def __repr__(self):
         return "(%s, %i)" % (self.type, self.mtime)
 
@@ -46,7 +46,7 @@ class DirState:
         self.subdirs = subdirs
         if path:
             self.update(path, path)
-    
+
     def update(self, path, omitted=None):
         for name in os.listdir(path):
             if name[0] == '.': continue
@@ -55,7 +55,7 @@ class DirState:
                 FileState(os.path.isdir(fullPath), os.stat(fullPath).st_mtime)
             if os.path.isdir(fullPath) and self.subdirs:
                 self.update(fullPath, omitted)
-    
+
     def list_new_files(self, oldState):
         new = []
         for path in self.files:
@@ -63,7 +63,7 @@ class DirState:
             if path not in oldState.files or self.files[path].mtime > oldState.files[path].mtime:
                 new.append(path)
         return new
-        
+
     def list_removed(self, oldState):
         """Returns a tuple: (list of removed files, list of removed dirs)"""
         rmFiles = []
@@ -79,9 +79,9 @@ class DirState:
 
 def sys_id():
     bits = platform.architecture()[0]
-    
+
     plat = sys.platform
-    
+
     # Special case: the Snow Leopard builder targets 64-bit.
     if plat == 'darwin':
         macVer = mac_os_version()
@@ -92,13 +92,13 @@ def sys_id():
             bits = '64bit'
         elif macVer == '10.5':
             plat = 'macx5'
-        
+
     return "%s-%s" % (plat, bits)
 
 
 def remote_copy(src, dst):
     dst = dst.replace('\\', '/')
-    os.system('scp %s %s' % (src, dst))  
+    os.system('scp %s %s' % (src, dst))
 
 
 def collated(s):
@@ -115,21 +115,21 @@ def todays_build_tag():
 
 def deb_arch():
     os.system('dpkg --print-architecture > __debarch.tmp')
-    arch = file('__debarch.tmp', 'rt').read().strip()
+    arch = open('__debarch.tmp', 'rt').read().strip()
     os.remove('__debarch.tmp')
     return arch
 
 
 def aptrepo_by_time():
     files = []
-    for fn in os.listdir(os.path.join(config.APT_REPO_DIR, 
+    for fn in os.listdir(os.path.join(config.APT_REPO_DIR,
                                       'dists/unstable/main/binary-' + deb_arch())):
         if fn[-4:] == '.deb':
             files.append(fn)
     return files
-    
 
-def aptrepo_find_latest_tag():    
+
+def aptrepo_find_latest_tag():
     debs = aptrepo_by_time()
     if not debs: return config.BRANCH
     arch = deb_arch()
@@ -138,14 +138,14 @@ def aptrepo_find_latest_tag():
         number = int(deb[deb.find('-build')+6 : deb.find('_'+arch)])
         biggest = max(biggest, number)
     return 'build' + str(biggest)
-    
+
 
 def count_log_word(fn, word):
     count = 0
     try:
         for txt in [str(rl, 'latin1').lower() for rl in string.split(gzip.open(fn).read(), '\n')]:
             pos = txt.find(str(word))
-            if pos < 0: continue 
+            if pos < 0: continue
             endPos = pos + len(word)
             # Ignore some unnecessary messages.
             if 'should be explicitly initialized in the copy constructor' in txt: continue
@@ -163,7 +163,7 @@ def count_log_word(fn, word):
                     txt[pos-11:pos] != 'shlibdeps: ' and txt[pos-12:pos] != 'genchanges: ' and \
                     txt[pos-12:pos] != 'cc1objplus: ':
                     #print('@', pos, 'in', txt)
-                    count += 1            
+                    count += 1
             except IndexError:
                 count += 1
     except:
@@ -174,7 +174,7 @@ def count_log_word(fn, word):
 
 def count_log_issues(fn):
     """Returns tuple of (#warnings, #errors) in the fn."""
-    return (count_log_word(fn, 'error'), count_log_word(fn, 'warning'))    
+    return (count_log_word(fn, 'error'), count_log_word(fn, 'warning'))
 
 
 def count_word(word, inText):
@@ -203,7 +203,7 @@ def version_split(versionText):
 
 def version_cmp(a, b):
     """Compares two versions, returning -1 if a < b, 0 if a == b, and 1 if a > b.
-    
+
     Arguments:
         a:  String in the form "1.2.3"
         b:  String in the form "3.4.5"
@@ -213,8 +213,8 @@ def version_cmp(a, b):
     if va < vb: return -1
     if va > vb: return 1
     return 0
-    
-    
+
+
 def system_command(cmd):
     result = subprocess.call(cmd, shell=True)
     if result != 0:

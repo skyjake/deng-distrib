@@ -44,8 +44,8 @@ def create_build_event():
     # Save the version number and release type.
     import build_version
     build_version.find_version(quiet=True)
-    print(build_version.DOOMSDAY_VERSION_FULL, file=file(ev.file_path('version.txt'), 'wt'))
-    print(build_version.DOOMSDAY_RELEASE_TYPE, file=file(ev.file_path('releaseType.txt'), 'wt'))
+    print(build_version.DOOMSDAY_VERSION_FULL, file=open(ev.file_path('version.txt'), 'wt'))
+    print(build_version.DOOMSDAY_RELEASE_TYPE, file=open(ev.file_path('releaseType.txt'), 'wt'))
 
     update_changes()
 
@@ -206,7 +206,7 @@ def build_source_package():
 
     # Check distribution.
     system_command("lsb_release -a | perl -n -e 'm/Codename:\s(.+)/ && print $1' > /tmp/distroname")
-    hostDistro = file('/tmp/distroname', 'rt').read()
+    hostDistro = open('/tmp/distroname', 'rt').read()
     # xenial: 16.04 LTS
     # bionic: 18.04 LTS
     # eoan: latest
