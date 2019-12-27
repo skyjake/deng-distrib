@@ -223,7 +223,7 @@ def system_command(cmd):
 
 def python3_executable():
     if sys.platform[:3] == 'win':
-        return 'python3'
+        return 'python'
     else:
         return '/usr/bin/env python3'  # required by Snowberry
 
