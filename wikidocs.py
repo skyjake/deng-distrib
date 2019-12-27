@@ -1,4 +1,4 @@
-#!/usr/bin/env hbpython
+#!/usr/bin/env python3
 # Script for generating documentation for the wiki
 
 import sys, os, subprocess
@@ -17,7 +17,7 @@ def amethyst(input, ame_opts=[]):
     """Runs amethyst with the given input and returns the output."""
     p = subprocess.Popen(['amethyst', '-dDOKUWIKI'] + ame_opts,
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (output, errs) = p.communicate(input)
+    (output, errs) = p.communicate(input.encode('utf-8'))
     return output
 
 #
