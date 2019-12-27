@@ -234,7 +234,7 @@ def listTasks(clientId=None, includeCompleted=True, onlyCompleted=False,
 
     for name in os.listdir(homeDir()):
         fn = os.path.join(homeDir(), name)
-        if fn == '.' or fn == '..': continue
+        if fn == '.' or fn == '..' or fn.startswith('__'): continue
 
         # All tasks are specific to a client.
         if os.path.isdir(fn) and (name == clientId or allClients):
