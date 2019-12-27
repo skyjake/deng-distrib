@@ -127,7 +127,7 @@ class Changes:
             entry.set_subject(logText[pos+11:end])
 
             # Debian changelog just gets the subjects.
-            print(entry.subject)
+            print(' -', entry.subject)
             if entry.subject not in self.debChangeEntries and not \
                 self.should_ignore(entry.subject):
                 self.debChangeEntries.append(entry.subject)
