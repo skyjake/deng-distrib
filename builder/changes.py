@@ -11,10 +11,9 @@ def encodedText(logText):
     logText = logText.replace('ö', '&ouml;')
     logText = logText.replace('Ä', '&Auml;')
     logText = logText.replace('Ö', '&Ouml;')
-    logText = logText.encode('utf-8')
     logText = logText.replace('<', '&lt;')
     logText = logText.replace('>', '&gt;')
-    logText = [c for c in logText if c in string.whitespace or c > ' ']
+    logText = "".join([c for c in logText if c in string.whitespace or c > ' '])
     return logText
 
 
@@ -111,7 +110,7 @@ class Changes:
 
         os.chdir(config.DOOMSDAY_DIR)
         os.system("git log %s..%s --format=\"%s\" >> %s" % (self.fromTag, self.toTag, format, tmpName))
-        logText = open(tmpName, 'rt').read().decode('utf-8')
+        logText = open(tmpName, 'rt').read()
         os.remove(tmpName)
         os.chdir(oldDir)
 
@@ -128,6 +127,7 @@ class Changes:
             entry.set_subject(logText[pos+11:end])
 
             # Debian changelog just gets the subjects.
+            print(entry.subject)
             if entry.subject not in self.debChangeEntries and not \
                 self.should_ignore(entry.subject):
                 self.debChangeEntries.append(entry.subject)
@@ -188,7 +188,7 @@ class Changes:
             if entry.tags: continue
             # This entry has no tags yet.
             for tag in allTags:
-                tag = tag.encode('utf-8')
+                #tag = tag.encode('utf-8')
                 p = entry.subject.lower().find(tag.lower())
                 if p < 0: continue
                 if p == 0 or entry.subject[p - 1] not in string.ascii_letters + '-_':
@@ -243,7 +243,7 @@ class Changes:
             groups = self.form_groups(entries)
             keys = list(groups.keys())
             # Sort case-insensitively by group name.
-            keys.sort(cmp=lambda a, b: cmp(str(a).lower(), str(b).lower()))
+            keys.sort(key=lambda a: a.lower())
             for group in keys:
                 if not len(groups[group]): continue
 
@@ -276,7 +276,7 @@ class Changes:
             for entry in self.entries:
                 print('<commit>', file=out)
                 print('<submitDate>%s</submitDate>' % entry.date, file=out)
-                out.write(('<author>%s</author>\n' % xmlEncodedText(entry.author)).encode('utf-8'))
+                print('<author>%s</author>' % xmlEncodedText(entry.author), file=out)
                 print('<repositoryUrl>%s</repositoryUrl>' % entry.link, file=out)
                 print('<sha1>%s</sha1>' % entry.hash, file=out)
                 if entry.tags or entry.guessedTags:
