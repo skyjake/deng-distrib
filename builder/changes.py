@@ -111,7 +111,7 @@ class Changes:
 
         os.chdir(config.DOOMSDAY_DIR)
         os.system("git log %s..%s --format=\"%s\" >> %s" % (self.fromTag, self.toTag, format, tmpName))
-        logText = str(open(tmpName, 'rt').read(), 'utf-8')
+        logText = open(tmpName, 'rt').read().decode('utf-8')
         os.remove(tmpName)
         os.chdir(oldDir)
 
