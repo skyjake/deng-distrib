@@ -499,6 +499,7 @@ def systemCommand(cmd):
 def newTask(name, forClient=None, allClients=False):
     if allClients:
         for fn in os.listdir(homeDir()):
+            if fn.startswith('__'): continue
             if os.path.isdir(os.path.join(homeDir(), fn)):
                 newTask(name, fn)
         return
@@ -522,6 +523,7 @@ def clearTask(name, direc=None):
     """Delete all task files with this name."""
     if not direc: direc = homeDir()
     for fn in os.listdir(direc):
+        if fn.startswith('__'): continue
         p = os.path.join(direc, fn)
         if os.path.isdir(p):
             clearTask(name, p)
