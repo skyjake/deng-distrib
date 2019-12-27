@@ -65,7 +65,7 @@ def todays_platform_release():
 
     try:
         print('platform_release.py...')
-        run_python2("platform_release.py > %s 2> %s" % \
+        run_python3("platform_release.py > %s 2> %s" % \
             ('buildlog.txt', 'builderrors.txt'))
     except Exception as x:
         print('Error during platform_release:', x)

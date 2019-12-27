@@ -221,14 +221,12 @@ def system_command(cmd):
         raise Exception("System command \"%s\" returned error code %i" % (cmd, result))
 
 
-def python2_executable():
+def python3_executable():
     if sys.platform[:3] == 'win':
-        return 'python'
-    elif mac_os_version() == '10.5':
-        return '/usr/bin/env python2.5'  # required by Snowberry
+        return 'python3'
     else:
-        return '/usr/bin/env python2.7'
+        return '/usr/bin/env python3'  # required by Snowberry
 
 
-def run_python2(script):
-    system_command(python2_executable() + " " + script)
+def run_python3(script):
+    system_command(python3_executable() + " " + script)

@@ -486,7 +486,7 @@ def autobuild(cmd):
 
     cmdLine += " --branch %s" % currentBranch()
 
-    builder.utils.run_python2(cmdLine)
+    builder.utils.run_python3(cmdLine)
     return True
 
 
