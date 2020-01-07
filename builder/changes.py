@@ -218,7 +218,7 @@ class Changes:
         """Pretty group list for use in HTML output."""
         listed = ''
         if len(tags) > 1:
-            listed = string.join(tags[:-1], ', ')
+            listed = ', '.join(tags[:-1])
             listed += ' and ' + tags[-1]
         elif len(tags) == 1:
             listed = tags[0]
