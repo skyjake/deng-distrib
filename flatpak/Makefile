@@ -29,6 +29,7 @@ repo:
 		--prune-depth=3
 
 sync:
+	rsync -a --progress --exclude="summary*" --rsh="dengpass ssh" ${REPO_DIR}/ skyjake@dengine.net:files/repo/
 	rsync -a --progress --delete-after --rsh="dengpass ssh" ${REPO_DIR}/ skyjake@dengine.net:files/repo/
 
 .PHONY: all ${MANIFEST} bundle repo sync
