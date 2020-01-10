@@ -41,6 +41,7 @@ def git_tag(tag):
 def git_head():
     """Returns the current HEAD commit hash."""
     os.chdir(builder.config.DOOMSDAY_DIR)
-    head = subprocess.check_output('git rev-parse HEAD', shell=True).strip()
+    head = subprocess.check_output('git rev-parse HEAD', shell=True) \
+                     .decode('utf-8').strip()
     os.chdir(builder.config.DISTRIB_DIR)
     return head
