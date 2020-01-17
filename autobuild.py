@@ -318,14 +318,14 @@ def rebuild_apt_repository():
 
 
 def purge_obsolete():
-    """Purge old builds from the event directory (old > 4 weeks)."""
-    threshold = 3600 * 24 * 7 * 4
+    """Purge old builds from the event directory (old > 3 weeks)."""
+    threshold = 3600 * 24 * 7 * 3
 
     # We'll keep a small number of events unpurgable.
     totalCount = len(builder.find_old_events(0))
 
     # Purge the old events.
-    print('Deleting build events older than 4 weeks...')
+    print('Deleting build events older than 3 weeks...')
     for ev in builder.find_old_events(threshold):
         if totalCount > 5:
             print(ev.tag())
