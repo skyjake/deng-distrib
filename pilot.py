@@ -320,7 +320,7 @@ def listen():
 def query(q):
     """Sends a query to the server and returns the result."""
     import socket
-    attempts = 3
+    attempts = 10
     response = None
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     while attempts > 0:
@@ -333,7 +333,7 @@ def query(q):
             return response
         except socket.gaierror:
             attempts -= 1
-            time.sleep(5)
+            time.sleep(8)
     raise Exception("Query failed to contact host")
 
 
