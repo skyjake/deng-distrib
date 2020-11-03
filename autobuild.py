@@ -207,10 +207,11 @@ def build_source_package():
     # Check distribution.
     system_command("lsb_release -a | perl -n -e 'm/Codename:\s(.+)/ && print $1' > /tmp/distroname")
     hostDistro = open('/tmp/distroname', 'rt').read()
-    # xenial: 16.04 LTS
-    # bionic: 18.04 LTS
-    # eoan: latest
-    distros = ['xenial', 'bionic', 'eoan']
+    # Two of the most recent LTS releases, and the very latest release.
+    # - bionic: 18.04 LTS
+    # - focal: 20.04 LTS
+    # - groovy: latest
+    distros = ['bionic', 'focal', 'groovy']
 
     for distro in distros:
         for pkgName in ['doomsday', 'doomsday-server']:
