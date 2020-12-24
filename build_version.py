@@ -23,15 +23,15 @@ def parse_cmake_for_version(cmakeFile):
     f = open(cmakeFile, 'rt')
     for line in f.readlines():
         if line[:3] == "set":
-            major = re.search(r'DENG_VERSION_MAJOR.*([0-9]+)', line)
+            major = re.search(r'_VERSION_MAJOR.*([0-9]+)', line)
             if major:
                 versionMajor = int(major.group(1))
                 continue
-            minor = re.search(r'DENG_VERSION_MINOR.*([0-9]+)', line)
+            minor = re.search(r'_VERSION_MINOR.*([0-9]+)', line)
             if minor:
                 versionMinor = int(minor.group(1))
                 continue
-            patch = re.search(r'DENG_VERSION_PATCH.*([0-9]+)', line)
+            patch = re.search(r'_VERSION_PATCH.*([0-9]+)', line)
             if patch:
                 versionRevision = int(patch.group(1))
                 continue
@@ -43,11 +43,11 @@ def parse_cmake_for_version(cmakeFile):
 
     return (versionMajor, versionMinor, versionRevision, versionName, releaseType)
 
-def find_version(quiet = False):
+def find_version(doomsdayDir = DOOMSDAY_DIR, quiet = False):
     if not quiet: print("Determining Doomsday version...", end=' ')
 
     versionMajor, versionMinor, versionRevision, versionName, releaseType = \
-        parse_cmake_for_version(os.path.join(DOOMSDAY_DIR, 'cmake', 'Version.cmake'))
+        parse_cmake_for_version(os.path.join(doomsdayDir, 'cmake', 'Version.cmake'))
     if not releaseType: releaseType = "Unstable"
 
     versionBase = "%s.%s.%s" % (versionMajor, versionMinor, versionRevision)

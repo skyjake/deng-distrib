@@ -15,7 +15,8 @@ import builder.utils
 
 # Configuration.
 LAUNCH_DIR    = os.path.abspath(os.path.dirname(__file__))
-DOOMSDAY_DIR  = os.path.abspath(os.path.join(LAUNCH_DIR, '..', 'deng', 'doomsday'))
+DOOMSDAY_DIR  = os.path.abspath(os.path.join(LAUNCH_DIR, '..', 'deng', 'doomsday')) \
+                if len(sys.argv) == 1 else os.path.abspath(sys.argv[1])
 WORK_DIR      = os.path.join(LAUNCH_DIR, 'work')
 OUTPUT_DIR    = os.path.join(LAUNCH_DIR, 'releases')
 DOOMSDAY_VERSION_FULL       = "0.0.0-Name"
@@ -76,7 +77,7 @@ def duptree(s, d):
 
 
 def find_version():
-    build_version.find_version()
+    build_version.find_version(doomsdayDir=DOOMSDAY_DIR)
 
     global DOOMSDAY_VERSION_FULL
     global DOOMSDAY_VERSION_FULL_PLAIN
@@ -84,7 +85,7 @@ def find_version():
     global DOOMSDAY_VERSION_MINOR
     global DOOMSDAY_VERSION_REVISION
     global DOOMSDAY_RELEASE_TYPE
-
+    
     DOOMSDAY_RELEASE_TYPE = build_version.DOOMSDAY_RELEASE_TYPE
     DOOMSDAY_VERSION_FULL_PLAIN = build_version.DOOMSDAY_VERSION_FULL_PLAIN
     DOOMSDAY_VERSION_FULL = build_version.DOOMSDAY_VERSION_FULL
@@ -147,7 +148,8 @@ def cmake_options():
     except:
         print(("No additional options provided for CMake (%s missing)" % cmake_options_path()))
         opts = ''
-    common = ' -DCMAKE_BUILD_TYPE=Release -DDENG_BUILD=%s ' % (DOOMSDAY_BUILD_NUMBER)
+    common = ' -DCMAKE_BUILD_TYPE=Release -DDENG_BUILD=%s -DDE_BUILD=%s' % (
+        DOOMSDAY_BUILD_NUMBER, DOOMSDAY_BUILD_NUMBER)
     return [o + common for o in map(str.strip, opts.split('-----'))]
 
 
@@ -188,41 +190,6 @@ def win_release():
 
 def linux_release():
     cmake_release('-j`nproc`', ['*.deb', '*.rpm'])
-
-
-# def linux_release_dpkg():
-#     """Use `dpkg-buildpackage` to build a binary Debian package."""
-
-#     os.chdir(LAUNCH_DIR)
-
-#     # Check that the changelog exists.
-#     if not os.path.exists('debian/changelog'):
-#         os.system('dch --check-dirname-level=0 --create --package doomsday -v %s-%s "Initial release."' % (DOOMSDAY_VERSION_FULL_PLAIN, DOOMSDAY_BUILD))
-
-#     def clean_products():
-#         # Remove previously built deb packages.
-#         os.system('rm -f ../doomsday*.deb ../doomsday*.changes ../doomsday*.tar.gz ../doomsday*.dsc')
-#         os.system('rm -f doomsday-fmod*.deb doomsday-fmod*.changes doomsday-fmod*.tar.gz doomsday-fmod*.dsc')
-#         #os.system('rm -f dsfmod/fmod-*.txt')
-
-#     clean_products()
-
-#     if os.system('linux/gencontrol.sh && dpkg-buildpackage -b'):
-#         raise Exception("Failure to build from source.")
-
-#     # Build dsFMOD separately.
-#     os.chdir('dsfmod')
-#     logSuffix = "%s-%s.txt" % (sys.platform, platform.architecture()[0])
-#     if os.system('LD_LIBRARY_PATH=`pwd`/../builddir/libcore:`pwd`/../builddir/liblegacy dpkg-buildpackage -b > fmod-out-%s 2> fmod-err-%s' % (logSuffix, logSuffix)):
-#         raise Exception("Failure to build dsFMOD from source.")
-#     shutil.copy(glob.glob('../doomsday-fmod*.deb')[0], OUTPUT_DIR)
-#     shutil.copy(glob.glob('../doomsday-fmod*.changes')[0], OUTPUT_DIR)
-#     os.chdir('..')
-
-#     # Place the result in the output directory.
-#     shutil.copy(glob.glob('../doomsday*.deb')[0], OUTPUT_DIR)
-#     shutil.copy(glob.glob('../doomsday*.changes')[0], OUTPUT_DIR)
-#     clean_products()
 
 
 def main():
